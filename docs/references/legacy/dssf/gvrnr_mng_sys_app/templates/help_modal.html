@@ -1,0 +1,122 @@
+{% load static %}
+<!-- Helop Modal -->
+<div class="modal fade" id="modalHelp">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalCnfrmTitle">
+          <img
+            src="{% static '/img/manual.png' %}"
+            class="simplePopupIcon"
+            id="alertImgErr"
+            style="width: 25px; height: 25px; margin-right: 15px;"
+          />
+          시스템 매뉴얼
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          onClick="closeHelp();"
+        ></button>
+      </div>
+      <div class="modal-body p-3" id="modalHelpBody">
+        <div class="mb-3">
+          <span
+            class="text-btn manual-btn"
+            id="gvrnr-manual-title"
+            >01. 정압기 트렌드 관리 시스템</span
+          >
+          <ul
+            class="list-group mt-1 mb-4 fadeIn manual-animate manual-group"
+            id="manual-group"
+          >
+            <a href="{% static '/resource/manual/gtms_manual.pdf' %}#page=4" target='_blank'>
+              <li
+              class="list-group-item list-group-item-action"
+              id="gvrnr-manual"
+              >
+                파일 업로드
+              </li>
+            </a>
+            <a href="{% static '/resource/manual/gtms_manual.pdf' %}#page=6" target='_blank'>
+              <li
+                class="list-group-item list-group-item-action"
+                id="gvrnr-manual"
+              >
+                정압기 검색
+              </li>
+            </a>
+            <a href="{% static '/resource/manual/gtms_manual.pdf' %}#page=7" target='_blank'>
+              <li
+                class="list-group-item list-group-item-action"
+                id="gvrnr-manual"
+              >
+                정압기 조회
+              </li>
+            </a>
+            <a href="{% static '/resource/manual/gtms_manual.pdf' %}#page=9" target='_blank'>
+              <li
+                class="list-group-item list-group-item-action"
+                id="gvrnr-manual"
+              >
+                테이블 및 차트 제어
+              </li>
+            </a>
+          </ul>
+        </div>
+        <!--
+        <div class="mb-3">
+          <span
+            class="text-btn manual-btn"
+            id="test-title"
+            >02. 테스트</span
+          >
+          <ul
+            class="list-group mt-1 fadeIn manual-animate manual-group"
+            id="manual-group"
+          >
+            <li
+              class="list-group-item list-group-item-action"
+              id="test-manual"
+            >
+              테스트 파일업로드
+            </li>
+            <li
+              class="list-group-item list-group-item-action"
+              id="test-manual"
+            >
+              테스트 검색
+            </li>
+            <li
+              class="list-group-item list-group-item-action"
+              id="test-manual"
+            >
+              테스트 조회
+            </li>
+            <li
+              class="list-group-item list-group-item-action"
+              id="test-manual"
+            >
+              테스트 테이블 및 그래프
+            </li>
+          </ul>
+        </div>
+        -->
+      </div>
+      <div class="text-center mb-30">
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-dismiss="modal"
+          onClick="closeHelp();"
+        >
+          닫기
+        </button>
+        <br />
+        <br />
+      </div>
+    </div>
+  </div>
+</div>

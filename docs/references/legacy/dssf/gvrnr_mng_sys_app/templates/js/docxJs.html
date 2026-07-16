@@ -1,0 +1,188 @@
+<script>
+	let contFormObj = document.contForm;
+	let contFormStr = "document.contForm";
+	let contForm = "contForm";
+	let contentsWrap = "content-wrap";
+
+	let preFormObj = document.preForm;
+	let preFormId = "preForm";
+
+	let extraForm = "extraForm";
+	let extraFormObj = document.extraForm;
+
+	let PROC_CHK = "";
+
+	function jsonCompResult( resJson )
+	{
+		let resStr = eval( "(" + resJson + ")" );
+
+		console.log(resStr)
+		
+		if( resStr.resCd != "0000" )
+		{
+			openAlert("잠시후 다시 시도해 주세요.", 'FALIL');
+			return;
+		}
+		else
+		{
+			if( PROC_CHK == "INS" )
+			{
+				openAlert("업로드가 완료되었습니다.", 'SUCCESS', "goUploadPage()");
+				return;
+			}
+			else if( PROC_CHK == "UPD" )
+			{
+				if( resStr.mem_id == "DUPL" )
+				{
+					openAlert("[수정] 이미 사용중인 아이디입니다.", 'FAIL');
+					return;
+				}
+				else
+				{
+					openAlert("[수정] 정상처리되었습니다.", 'SUCCESS', "goReload()");
+					return;
+				}
+			}
+			else if( PROC_CHK == "SETDEL" )
+			{
+				openAlert("[삭제] 정상처리되었습니다.", 'SUCCESS', "goReload()");
+				return;
+			}
+		}
+	}
+
+	function goReload()
+	{
+		goUrl = "";
+		jsOnSubmit( contFormObj, goUrl, "GET" );
+	}
+
+	function goList( Div )
+	{
+		if( Div == "SRCH" )contFormObj.currentPage.value=1;
+			
+		PROC_CHK = "RELOAD";
+		goUrl = "";
+		jsOnSubmit( contFormObj, goUrl );
+	}
+
+	function goPage( currentPage )
+	{
+		contFormObj.workDiv.value="";
+		contFormObj.currentPage.value = currentPage;
+		goList('');
+	}
+
+	function goUploadPage( currentPage )
+	{
+		goUrl = "/docuConv";
+		
+		location.href = goUrl
+	}
+
+	function goUpload( )
+	{
+		PROC_CHK = "INS"
+		
+		goUrl = '/convertToAll/';
+		ajaxCrudOnSubmit(contForm, goUrl);
+	}
+
+	function goListToDtail(IDX)
+	{
+		contFormObj.brd_uid.value = IDX;
+		
+		goUrl = "/board/detail/" + IDX;
+		jsOnSubmit( contFormObj, goUrl, 'GET');
+	}
+
+	function goDetailToList()
+	{
+		goUrl = "/board";
+		
+		location.href = goUrl
+	}
+
+	function goCRUD(workDiv)
+	{
+		PROC_CHK = workDiv;
+		contFormObj.workDiv.value = workDiv;
+
+		if( workDiv == "DEL" )
+		{
+			
+		}
+		else
+		{
+			if( checkFormInput(extraFormObj.mem_id, "아이디") == false) return;
+			if( checkFormInput(extraFormObj.mem_pwd, "비밀번호") == false) return;
+			
+			if( extraFormObj.mem_id.value.length < 3 )
+			{
+				openAlert("아이디는 3자리 이상이어야 합니다.", 'FAIL');
+				return;
+			}
+			
+			if( extraFormObj.mem_id.value.indexOf(" ") > -1 )
+			{
+				openAlert("아이디는 공백을 허용하지 않습니다.", 'FAIL');
+				return;
+			}
+			
+			if( extraFormObj.mem_pwd.value.length < 4 || extraFormObj.mem_pwd.value.length > 15 )
+			{
+				openAlert("비밀번호는 4~15자리로 입력해 주세요.", 'FAIL');
+				return;
+			}
+			
+			if( extraFormObj.mem_pwd.value.indexOf(" ") > -1 )
+			{
+				openAlert("비밀번호는 공백을 허용하지 않습니다.", 'FAIL');
+				return;
+			}
+			
+			if(workDiv == "UPD") 
+			{
+				openConfirm("수정하시겠습니까?", "cntntsCRUD();");
+			} 
+			else if (workDiv == "INS") 
+			{
+				openConfirm("등록하시겠습니까?", "cntntsCRUD();");
+			}
+		}
+	}
+
+	function cntntsCRUD()
+	{
+		PROC_CHK = extraFormObj.workDiv.value;
+		
+		goUrl = "memberCRUD";
+
+		ajaxCrudOnSubmit( extraForm, goUrl );
+	}
+
+	let selObj = "";
+
+	function setDel(workDiv, idx)
+	{
+		PROC_CHK = "SETDEL";
+		
+		contFormObj.brd_uid.value = idx;
+		
+		openConfirm("삭제하시겠습니까?", "tmpSetDelCRUD()");
+		return;
+	}
+
+	function setDelCRUD()
+	{
+		goUrl = "delete";
+		ajaxCrudOnSubmit( contForm, goUrl );
+	}
+	
+	function tmpSetDelCRUD()
+	{
+		goUrl = "delete/";
+		ajaxOnSubmit( contForm, goUrl );
+	}
+	
+</script>

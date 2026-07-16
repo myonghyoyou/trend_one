@@ -1,0 +1,422 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html class="no-js" lang="kr">
+  <head>
+    {% include "_include/meta.html" %}
+    <title>정압기 트렌드 관리 시스템</title>
+  </head>
+  <script>
+    const agent = window.navigator.userAgent.toLowerCase();
+
+    let browserName;
+
+    switch (true) {
+      case agent.indexOf("edge") > -1:
+        browserName = "Ms Edge";
+        break;
+      case agent.indexOf("edg/") > -1:
+        browserName = "Edge (chromium based)";
+        break;
+      case agent.indexOf("opr") > -1:
+        browserName = "Opera";
+        break;
+      case agent.indexOf("chrome") > -1:
+        browserName = "Chrome";
+        break;
+      case agent.indexOf("trident") > -1:
+        browserName = "MS IE";
+        alert("해당 서비스는 Chrome과 Edge에서만 이용이 가능합니다.");
+
+        document.execCommand("Stop");
+        break;
+      case agent.indexOf("firefox") > -1:
+        browserName = "Mozilla Firefox";
+        break;
+      case agent.indexOf("safari") > -1:
+        browserName = "Safari";
+        break;
+    }
+
+    console.log("Browser is : " + browserName);
+  </script>
+  <body>
+    <!-- Navigation Bar -->
+    <form
+      name="contForm"
+      id="contForm"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      {% csrf_token %}
+      <header class="container-fluid d-flex align-items-center">
+        <div class="row w-100">
+          <div class="col-6 d-flex align-items-center title">
+            <img
+              class="img-ci"
+              src="{% static 'img/index_ci.png' %}"
+              onclick="goReload();"
+            />
+            <span class="text_title">정압기 트렌드 관리 시스템</span>
+          </div>
+          <div class="col-6 d-flex align-items-center justify-content-end">
+            <!--
+            <div class="d-flex">
+              <span>매뉴얼</span>
+              <span>&nbsp;|&nbsp;</span>
+            </div>
+            -->
+            <div class="d-none" id="login-section">
+              <span class="text-btn" id="login-btn" onClick="login();"
+                >로그인</span
+              >
+            </div>
+            <div class="" id="account-section">
+              <span class="text_name">
+                {{user_id}} 님 환영합니다
+              </span>
+            </div>
+            <span class="ms-3" id="help-section">
+              <i
+                class="bi bi-question-circle-fill help-icon"
+                onClick="openHelp();"
+              ></i>
+            </span>
+            <div class="d-none" id="setting-section">
+              <div class="box__icons ms-3">
+                <i
+                  class="bi bi-gear-fill dropdown-icon"
+                  id="dropdownMenuButton1"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                ></i>
+                <i
+                  class="bi bi-caret-down-fill dropdown-btn"
+                  type="button"
+                  id="dropdownMenuButton1"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                ></i>
+                <ul
+                  class="dropdown-menu animate fadeIn"
+                  aria-labelledby="dropdownMenuButton1"
+                >
+                  <li>
+                    <i class="bi bi-box-arrow-right"></i>
+                    <a class="dropdown-item" href="#" onClick="logout();"
+                      >로그아웃</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="container-fluid">
+        <!-- 정압기 검색 필터 및 정압기 검색 결과 리스트 -->
+        <div class="row srch-and-table-row">
+          <div class="col h-100">
+            <div class="card p-3 h-100">
+              <div class="row" id="srch-row">
+                <div class="col d-flex flex-column">
+                  <div class="col d-flex justify-content-between search-box">
+                    <div class="d-flex align-items-center">
+                      <div class="d-flex align-items-center fltr-box">
+                        <!--
+                          <label for="startDate">시작일</label>
+                        -->
+                        <input
+                          type="date"
+                          id="startDate"
+                          name="startDate"
+                          value="2024-07-01"
+                        />
+                        <span class="mx-2">-</span>
+                        <!--
+                          <label for="endDate">종료일</label>
+                        -->
+                        <input
+                          type="date"
+                          id="endDate"
+                          name="endDate"
+                          value="2024-07-30"
+                        />
+                      </div>
+                      <div class="d-flex align-items-center fltr-box">
+                        <!--
+                          <label for="srchCity">지역</label>
+                        -->
+                        <select
+                          class="form-select"
+                          id="srchCity"
+                          name="srchCity"
+                        >
+                          <!--
+                          <option value="" selected disabled hidden>지역</option>
+                          -->
+                          <option value="3100" selected>경기</option>
+                          <option value="1100">서울</option>
+                        </select>
+                      </div>
+                      <div
+                        class="d-flex align-items-center fltr-box"
+                        id="fltr-box_day"
+                      >
+                        <!--
+                          <label for="inspctDay"></label>
+                        -->
+                        <select
+                          class="form-select"
+                          id="inspctDay"
+                          name="inspctDay"
+                        >
+                          <option value="" selected disabled hidden
+                            >점검 요일</option
+                          >
+                          <option value="MON">월요일</option>
+                          <option value="TUE">화요일</option>
+                          <option value="WED">수요일</option>
+                          <option value="THU">목요일</option>
+                          <option value="FRI">금요일</option>
+                        </select>
+                      </div>
+                      <div
+                        class="d-flex align-items-center fltr-box"
+                        id="fltr-box_gvrnr"
+                      >
+                        <input
+                          type="text"
+                          id="srchCntnt"
+                          name="srchCntnt"
+                          value=""
+                          placeholder="정압기명"
+                        />
+                      </div>
+                    </div>
+                    <div class="ms-2">
+                      <div
+                        class="btn btn-primary"
+                        id="srch-btn"
+                        onClick="goSrch();"
+                      >
+                        검색
+                      </div>
+                    </div>
+                  </div>
+                  <!--
+                  <div class="col d-flex align-items-center name-search-section">
+                    <div>
+                      <label for="srchCntnt">정압기명</label>
+                      <input type="text" id="srchCntnt" name="srchCntnt" value="" placeholder="정압기명"/>
+                      <div class="btn btn-primary" onClick="goSrch();">검색</div>
+                    </div>
+                  </div>
+                  -->
+                </div>
+              </div>
+              <div class="row" id="btn-row">
+                <div class="col d-flex srch-list">
+                  <div class="col-6" id="upload-btn-section">
+                    <!--
+                          <div class="btn btn-primary upload-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">CSV 파일 업로드</div>
+                      -->
+                    <input
+                      type="file"
+                      class="d-none"
+                      id="upload_files"
+                      name="upload_files"
+                      accept=".xlsx, .xls"
+                    />
+                    <div class="btn d-block btn-primary col-2" id="upload-btn">
+                      파일 업로드
+                    </div>
+                  </div>
+                  <div class="col-6" id="inspct-btn-section">
+                    <!--
+                          <div class="btn btn-primary upload-btn" data-bs-toggle="modal" data-bs-target="#staticBackdrop">CSV 파일 업로드</div>
+                      -->
+                    <div
+                      class="btn btn-primary"
+                      id="inquire-btn"
+                      onclick="goInquire('NEWLIST');"
+                    >
+                      조회
+                    </div>
+                    <!--
+                      <div class="btn btn-primary ms-2 save-btn" onclick="savePDF('myChart', 'myChart');">PDF 파일로 저장</div>
+                      -->
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <div class="table-container">
+                    <table class="table gvrnr-table table-bordered m-0">
+                      <thead>
+                        <tr class="table-primary">
+                          <th id="checkbox-row" scope="col"></th>
+                          <th id="region-row" scope="col">지역</th>
+                          <th scope="col">정압기명</th>
+                          <th id="inspct-day-row" scope="col">점검 요일</th>
+                        </tr>
+                      </thead>
+                      <tbody class="gvrnr-table-body">
+                        <tr>
+                          <td colspan="4">정압기명을 검색해주세요</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col h-100">
+            <div class="card p-3 h-100">
+              <div class="row" id="interval-control-row">
+                <div class="col d-flex justify-content-between">
+                  <div class="col-3">
+                    <select class="form-select" id="interval-sel">
+                      <option value="">10분 간격</option>
+                      <option value="20">20분 간격</option>
+                      <option value="30">30분 간격</option>
+                      <option value="40">40분 간격</option>
+                    </select>
+                  </div>
+                  <!--
+                      <div class="col-2">
+                        <select class="form-select gvrnr-sel">
+                        </select>
+                      </div>
+                      -->
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <table
+                    class="table table-bordered data-table gvrnr-data-table"
+                    id="gvrnr-data-table-head"
+                  >
+                    <thead>
+                      <tr class="table-primary">
+                        <th>측정일</th>
+                        <th class="press2">2차 압력</th>
+                        <!--
+                            <th class="pointer press1">1차 압력</th>
+                            <th class="pointer trnsps1">1차 전위</th>
+                            <th class="pointer trnsps2">2차 전위</th>
+                            -->
+                      </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-3 chart-row">
+          <div class="col h-100">
+            <div class="card h-100">
+              <div class="row h-100">
+                <div
+                  class="col-4 h-100 d-flex flex-column align-items-center justify-content-evenly result-stat-wrapper"
+                  style="padding: 20px;"
+                >
+                  <!--
+                  <table class="table table-bordered">
+                    <thead>
+                      <th colspan="2">테스트1</th>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>MIN</td>
+                        <td>1</td>
+                      </tr>
+                      <tr>
+                        <td>MIN</td>
+                        <td>1.2</td>
+                      </tr>
+                      <tr>
+                        <td>MAX</td>
+                        <td>1.5</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <table class="table table-bordered">
+                    <thead>
+                      <th colspan="2">테스트2</th>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>MIN</td>
+                        <td>1</td>
+                      </tr>
+                      <tr>
+                        <td>MIN</td>
+                        <td>1.2</td>
+                      </tr>
+                      <tr>
+                        <td>MAX</td>
+                        <td>1.5</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <table class="table table-bordered">
+                    <thead>
+                      <th colspan="2">테스트3</th>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>MIN</td>
+                        <td>1</td>
+                      </tr>
+                      <tr>
+                        <td>MIN</td>
+                        <td>1.2</td>
+                      </tr>
+                      <tr>
+                        <td>MAX</td>
+                        <td>1.5</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  -->
+                </div>
+                <div
+                  class="col-8 d-flex result-chart-wrapper h-100"
+                  style="padding: 20px;"
+                >
+                  <div id="myChart"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {% include "_include/loader.html" %} {% include "_include/modals.html" %}
+      {% include "help_modal.html" %} {% include "_include/js.html" %}
+
+      <script>
+        if ("{{bad_request}}" != "False") {
+          self.opener = self;
+
+          openAlert(
+            "잘못된 접근입니다. <br> 하이페리온을 통해 접속해주세요.",
+            "FAIL",
+            "location.replace('https://dr.hanjinsc.com/WebSite/Login.aspx?LogOut=LogOut&isMobile=0')"
+          );
+        }
+      </script>
+
+      <input type="hidden" id="gvrnrUids" name="gvrnrUids" value="" />
+      <input type="hidden" id="gvrnrNms" name="gvrnrNms" value="" />
+      <input type="hidden" id="intervalNum" name="intervalNum" value="" />
+      <input type="hidden" id="mbrUid" name="mbrUid" value="{{user_id}}" />
+    </form>
+  </body>
+</html>

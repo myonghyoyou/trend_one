@@ -1,0 +1,33 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html class="no-js" lang="kr">
+  <head>
+    {% include "_include/meta.html" %}
+    <title>정압기 트렌드 관리 시스템</title>
+  </head>
+  <body>
+    <form name="contForm" method="post" action="/main/">
+      <input type="hidden" name="user_id" value="{{user_id}}"/>
+    </form>
+  </body>
+</html>
+
+{% include "_include/modals.html" %}
+
+<!-- jQuery Script -->
+<script type="text/javascript" src="{% static 'js/lib/jquery/jquery-3.6.0.min.js' %}"></script>
+    
+<!-- Bootstrap Bundle -->
+<script type="text/javascript" src="{% static 'js/lib/bootstrap/bootstrap.bundle.min.js' %}"></script>
+
+<!-- Bootstrap Bundle -->
+<script type="text/javascript" src="{% static 'js/common/modals.js' %}"></script>
+
+<script>
+  if("{{bad_request}}" != "False") {
+    openAlert("잘못된 접근입니다. <br> 하이페리온을 통해 접속해주세요.", "FAIL", "location.replace('https://dr.hanjinsc.com/WebSite/Login.aspx?LogOut=LogOut&isMobile=0')");
+  } else if ("{{bad_request}}" === "False") {
+    document.contForm.submit();
+  } 
+</script>

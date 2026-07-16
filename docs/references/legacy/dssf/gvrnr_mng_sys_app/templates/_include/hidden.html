@@ -1,0 +1,28 @@
+{% if not paramMap.initSetLang %}
+    {% with initSetLang='KR' %}
+
+    {% endwith %}
+{% endif %}
+
+<input type="hidden" name="workDiv" id="workDiv" value="{{ workDiv }}">
+<input type="hidden" name="initSetLeng" id="initSetLeng" value="{{ initSetLeng }}">
+<input type="hidden" name="initSrvGroup" id="initSrvGroup" value="ADM">
+
+<!--
+<input type="hidden" name="ssnMbrUid" id="ssnMbrUid" value="1590463160980">
+<input type="hidden" name="ssnMbrDivi" id="ssnMbrDivi" value="MBRDIVI-01">
+<input type="hidden" name="rgstrUid" id="rgstrUid" value="1590463160980">
+<input type="hidden" name="updtrUid" id="updtrUid" value="1590463160980">
+-->
+<input type="hidden" name="tSrch" id="tSrch" value="{{ tSrch }}">
+
+<!-- 
+<input type="hidden" name="ssnMbrUid" id="ssnMbrUid" value="{{ sessionMap.mbrUid }}">
+<input type="hidden" name="ssnMbrDivi" id="ssnMbrDivi" value="{{ sessionMap.mbrDivi }}">
+ -->
+<input type="hidden" name="ssnMbrUid" id="ssnMbrUid" value="{{ mem_seq }}">
+<input type="hidden" name="ssnMbrDivi" id="ssnMbrDivi" value="{{ mem_type }}">
+<input type="hidden" name="ssnMemSeq" id="ssnMemSeq" value="{{ mem_seq }}">
+
+<input type="hidden" name="rgstrUid" id="rgstrUid" value="{{ mem_seq }}">
+<input type="hidden" name="updtrUid" id="updtrUid" value="{{ mem_seq }}">

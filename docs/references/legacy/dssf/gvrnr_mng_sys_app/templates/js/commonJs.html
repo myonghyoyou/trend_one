@@ -1,0 +1,1019 @@
+<script>
+
+	//숫자형 체크에서 "." 소숫점을 표시할때 수숫점의 개수 체크
+	var EndPointcnt = 0;
+	var objField;
+	//===============================================================================
+	//Form Object 관련 함수
+	//===============================================================================
+	//입력체크 (필수항목)
+	function checkFormInput( field, fieldName )
+	{
+		objField = field;
+		
+		if( field.value == "" )  // 필수 입력 및 내용에 공백허용
+		{
+			//"을(를) 입력하여 주십시오."
+			openAlert(fieldName+"을(를) 입력해주세요.", 'FAIL', 'setFocus()');
+			return false;					
+		}		
+	}
+
+	function checkElemntIdInput( field, fieldName )
+	{
+		var idStr = "#"+field;
+		
+		if( $("input[type=text][name="+field+"]").val() == "" )  // 필수 입력 및 내용에 공백허용
+		{
+			//"을(를) 입력하여 주십시오."
+			openAlert(fieldName+"을(를) 입력해주세요.", 'FAIL', 'setFocus()');
+			return false;					
+		}		
+	}
+
+	function checkValInput( val, fieldName )
+	{
+		if( val == "" )  // 필수 입력 및 내용에 공백허용
+		{
+			//"을(를) 입력하여 주십시오."
+			openAlert(fieldName+"${call_inValid}", 'FAIL', 'setFocus()');
+			return false;					
+		}		
+	}
+
+
+	function CheckFormInputEngOrNum( field, fieldName, fieldMinLeng, fieldMaxLeng ) 
+	{ 
+		var strValue = field.value;
+		var strReg = /^[a-z]+[a-z0-9]{5,19}$/g;
+		//var strReg = /^[A-za-z0-9]/g;
+		
+		if ( ! strReg.test(strValue) )
+		{
+			openAlert(fieldName+"은(는) 영문자/숫자 "+fieldMinLeng+"~"+fieldMaxLeng+"자 이어야 합니다.", 'FAIL', 'setFocus()');
+			field.focus();
+			return false;
+		}
+		
+		if( strValue.length < Number(fieldMinLeng) || strValue.length > Number(fieldMaxLeng) )
+		{
+			openAlert(fieldName+"은(는) 영문자/숫자 "+fieldMinLeng+"~"+fieldMaxLeng+"자 이어야 합니다.", 'FAIL', 'setFocus()');
+			field.focus();
+			return false;
+		}   
+	}
+
+	//입력체크 (동일한값체크, 예:비밀번호/비밀번호확인)
+	function checkFormInputSame( field1, field_name1, field2, field_name2 )
+	{
+		if( field1.value != field2.value )  // 필수 입력 및 내용에 공백허용
+		{
+			openAlert(field_name1+" / "+field_name2+" 항목이 동일하지 않습니다.", 'FAIL', 'setFocus()');
+			field1.focus();
+			return false;					
+		}		
+	}
+
+	//입력체크 (숫자만)
+	function checkFormInputNumber( field )
+	{
+		key = event.keyCode;
+		if( key == 9 )return;
+		if( key == 8 )return;
+		if( key == 13 )return;
+		
+		//var regExp = RegExp(/^[0-9]+$/);
+		var regExp =  RegExp(/^[-]?\d+(?:[.]\d+)?$/);
+		
+		if (!regExp.test(field.value)) 
+		{
+			openAlert("숫자만 입력해주세요.", 'FAIL', 'setFocus()');
+			field.value = "0";
+			field.focus();
+			return;
+		}
+		
+	}
+
+	function checkFormInputArryCount( field, fieldName )
+	{
+		objField = field;
+		
+		if( field.value == "" || field.value == "0" )  // 필수 입력 및 내용에 공백허용
+		{
+			//"을(를) 입력하여 주십시오."
+			openAlert(fieldName+"${call_inValid}", 'FAIL', 'setFocus()');
+			return false;					
+		}		
+	}
+
+	function checkFormInputAmount( field, fieldName )
+	{
+		key = event.keyCode;
+
+		if( key == 9 )return;
+		//if( key == 8 )return;
+		if( key == 13 )return;
+		
+		//var regExp = /^[0-9]+$/;
+		var regExp =  RegExp(/^(\d|-)?(\d|,)*\.?\d*$/);
+		
+		if (!regExp.test(field.value)) 
+		{
+			if(fieldName)openAlert(fieldName+"은 숫자만 입력해주세요.", 'FAIL', 'setFocus()');
+			else openAlert("숫자만 입력해주세요.", 'FAIL', 'setFocus()');
+				
+			field.value = "0";
+			field.focus();
+			return;
+		}
+		
+		field.value = amountCommas(field.value);
+	}
+
+
+	//숫자 3자리 단위 , 표시하기
+	function amountCommas(str) 
+	{
+		var rtn = "";
+		var val = "";
+		var j = 0;
+		
+		str = amountUnCommas(str);
+		
+		var tmpStr = str.split(".");
+		
+		x = tmpStr[0].length;
+		
+		var val = tmpStr[0];
+		
+		x = val.length;
+		for(i=x; i>0; i--) 
+		{
+			if(j%3 == 0 && j!=0)
+			rtn = val.substring(i,i-1)+","+rtn; 
+			else
+			rtn = val.substring(i,i-1)+rtn;
+			j++;
+		}
+		
+		if( tmpStr.length > 1 )rtn = rtn +"."+tmpStr[1];
+		
+		return rtn;
+	}
+
+
+	//콤마풀기
+	function amountUnCommas(str) {
+		str = String(str);
+		return str.replace(/[^\d]+/g, '');
+	}
+
+
+	function checkFormInputPhoneNumber( fieldF, fieldM, fieldL, fieldName )
+	{
+		var ph = "";
+		if( ! fieldM )ph=fieldF.value;
+		else ph=fieldF.value+"-"+fieldM.value+"-"+fieldL.value;
+			
+		var regExp = /^(01[016789]{1}|02|0[3-9]{1}[0-9]{1})-?[0-9]{3,4}-?[0-9]{4}$/;
+		
+		if (!regExp.test(ph)) {
+			openAlert(fieldName+" 형식이 올바르지 않습니다.", 'FAIL', 'setFocus()');
+			fieldF.focus();
+			return false
+		}
+	}
+
+	function checkFormInputBizId( fieldF, fieldM, fieldL )  //사업자등록번호 체크 
+	{ 
+		var bizID = "";
+		if( ! fieldM )bizID=fieldF.value;
+		else bizID=fieldF.value+"-"+fieldM.value+"-"+fieldL.value;
+		
+		if( bizID == "000-00-00000" || ! checkBizId( bizID ) || bizID.length < 10 )
+		{
+			openAlert("사업자번호 형식이 올바르지 않습니다.", 'FAIL', 'setFocus()');
+			fieldF.focus();
+			return false
+		}
+	} 
+
+
+	function checkBizId( bizID )  //사업자등록번호 체크 
+	{ 
+		// bizID는 숫자만 10자리로 해서 문자열로 넘긴다. 
+		var checkID = new Array(1, 3, 7, 1, 3, 7, 1, 3, 5, 1); 
+		var tmpBizID, i, chkSum=0, c2, remander; 
+		bizID = bizID.replace(/-/gi,''); 
+
+		for (i=0; i<=7; i++) chkSum += checkID[i] * bizID.charAt(i); 
+		c2 = "0" + (checkID[8] * bizID.charAt(8)); 
+		c2 = c2.substring(c2.length - 2, c2.length); 
+		chkSum += Math.floor(c2.charAt(0)) + Math.floor(c2.charAt(1)); 
+		remander = (10 - (chkSum % 10)) % 10 ; 
+
+		if (Math.floor(bizID.charAt(9)) == remander) return true ; // OK! 
+		return false; 
+	} 
+
+
+	//입력체크 (해당 심볼로 자동 교체해줌)
+	function checkFormInputChngSimbol( field, fieldName, Simbol )
+	{
+		if( field.value == "" )  // 필수 입력 및 내용에 공백허용
+		{
+			openAlert(fieldName+"을(를) 입력하여 주십시오.", 'FAIL', 'setFocus()');
+			field.value = Simbol;
+			field.focus();
+			return false;					
+		}		
+	}
+
+	//입력체크 (공백포함 체크)
+	function checkFormInputBlank( field, fieldName )
+	{
+		if( field.value.indexOf(" ") > -1 )
+		{
+			openAlert(fieldName+"에 공백을 제거해 주십시오.", 'FAIL', 'setFocus()');
+			field.focus();
+			return false;
+		}
+	}
+
+	//입력체크 (URL형식)
+	function checkFormInputURL( field, fieldName )
+	{
+		var regex=/http:\/\/[A-Za-z0-9\.-]{3,}\.[A-Za-z]{2,3}/;
+		if(regex.test(field.value) === false) {  
+			openAlert(fieldName+"을(를) URL 형식이 올바르지 않습니다.", 'FAIL', 'setFocus()');
+			field.focus();
+			return false; 
+		}
+	}
+
+	//입력체크 (이메일형식)
+	function checkFormInputEmail( fieldId, fieldDom, fieldName )
+	{
+		if( ! fieldName ) fieldName="";
+		
+		var eml = "";
+		if( ! fieldDom )eml=fieldId.value;
+		else eml=fieldId.value+"@"+fieldDom.value;
+		
+		var regex=/^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/;
+		
+		if(regex.test(eml) === false) {  
+			openAlert(fieldName+" 이메일 형식이 올바르지 않습니다.", 'FAIL', 'setFocus()');
+			fieldId.focus();
+			return false; 
+		}
+	}
+
+	//입력체크 (최대값체크 교체해줌)
+	function checkFormInputMax( field, fieldName, Simbol )
+	{
+		if( field.value == "" || field.value > Simbol )  // 필수 입력 및 내용에 공백허용
+		{
+			openAlert(fieldName+"최대값("+Simbol+")을(를) 입력하여 주십시오.", 'FAIL', 'setFocus()');
+			field.value = Simbol;
+			field.focus();
+			return false;					
+		}		
+	}
+
+	function checkFormInputMin( field, fieldName, Simbol )
+	{
+		if( field.value == "" || field.value < Simbol )  // 필수 입력 및 내용에 공백허용
+		{
+			openAlert(fieldName+"최소값("+Simbol+")을(를) 입력하여 주십시오.", 'FAIL', 'setFocus()');
+			field.value = Simbol;
+			field.focus();
+			return false;					
+		}		
+	}
+
+	//입력체크 ( 중복체크 )
+	function checkFormInputUniqCheck( field, fieldName )
+	{
+		if( field.value != "Y" )  // 필수 입력 및 내용에 공백허용
+		{
+			openAlert(fieldName+"${call_inValid02}", 'FAIL', 'setFocus()');
+			return false;					
+		}	
+	}
+
+	//수정시 내용변경없음 체크 ( 중복체크 )
+	function checkNochngFormInputUniqCheck( field, fieldOrg, fieldName )
+	{
+		
+		if(field != null && field.value != undefined && field.value != null){
+			if( field.value == fieldOrg.value )  // 필수 입력 및 내용에 공백허용
+			{
+				openAlert(fieldName+"${call_inValid01}", 'FAIL', 'setFocus()');
+				return false;					
+			}	
+		}
+
+	}
+
+	function rmvSpChar( str )
+	{
+		var regExp = /[\{\}\[\]\/?.,;:|\)*~`!^\-+<>@\#$&\\\=\(\'\"]/gi;
+		var resStr = str.replace(regExp, "");
+		return resStr;	
+	}
+
+	function checkFormInputDate( field, fieldName )
+	{
+		var chk = field.value;
+		chk = chk.replace(/-/gi, ""); // - 기호를 replaceAll 효과주기
+		
+		if( chk == "" )
+		{
+			openAlert(fieldName+"을(를) 입력해주세요.", 'FAIL', 'setFocus()');
+			return false;					
+		}
+		
+		if( ! Number(chk) )
+		{
+			openAlert(fieldName+"의 형식이 맞지 않습니다.", 'FAIL', 'setFocus()');
+			return false;					
+		}
+	}
+
+	function checkNoPreDate( field, dateVal, fieldName )
+	{
+		var chk = dateVal;
+		chk = chk.replace(/-/gi, ""); // - 기호를 replaceAll 효과주기
+
+		var d = new Date();
+		var hh = d.getHours();
+		var mm = d.getMinutes();
+
+		if( hh < 10 )hh = "0"+hh;
+		if( mm < 10 )mm = "0"+hh;
+
+		var toDay = todayToStr( "" )+hh+mm;
+		
+		//alert(toDay);
+		//alert(chk);
+
+		if( toDay > chk )
+		{
+			openAlert(fieldName+"을(를) 지난날짜는 등록할수 없습니다.", 'FAIL', 'setFocus()');
+			field.focus();
+			return false;	
+		}
+	}
+
+
+	function checkFormEnter()
+	{
+		key = event.keyCode;
+		if( key == 13 )return true;
+		return false;
+	}
+
+	function chkPrntKeyEmpty( field, fieldName )
+	{
+		if( field.value == "" )
+		{
+			openAlert(fieldName+"을(를) 먼저 입력해주세요.", 'FAIL', 'setFocus()');
+			field.focus();
+			return false;	
+		}
+	}
+
+	function setFocus()
+	{
+		objField.focus();
+	}
+
+	//HTML 제거
+	function removeHTML( strHTML )
+	{
+		
+		var strHTML = strHTML.replace(/<(\/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(\/)?>/gi, "");
+		strHTML = strHTML.replace(/<(no)?script[^>]*>.*?<\/(no)?script>/ig, "");
+		strHTML = strHTML.replace(/<style[^>]*>.*<\/style>/ig, "");
+		strHTML = strHTML.replace(/<(\"[^\"]*\"|\'[^\']*\'|[^\'\">])*>/ig, "");
+		strHTML = strHTML.replace(/<\\w+\\s+[^<]*\\s*>/ig, "");
+		strHTML = strHTML.replace(/&[^;]+;/ig, "");
+		strHTML = strHTML.replace(/\\s\\s+/ig, "");
+		return strHTML;
+		
+	}
+
+	function entDateInput( field, simb )
+	{
+		if (event.keyCode != 13)return;
+		setDateInput( field, simb )
+	}
+
+	function setDateInput( field, simb )
+	{
+		var toDay = new Date();
+		
+		var YYYY = toDay.getYear();
+		var MM = toDay.getMonth()+1;
+		var DD = toDay.getDate();
+		
+		if( YYYY < 1000)YYYY=YYYY+1900;
+		if( MM < 10 )MM = "0"+MM;
+		if( DD < 10 )DD = "0"+DD;
+		
+		var tmpYYYY = "";
+		tmpYYYY = YYYY+"";	
+		
+		if( field.value.length == 2 )field.value = YYYY+simb+MM+simb+field.value;
+		if( field.value.length == 4 )field.value = YYYY+simb+field.value.substring(0,2)+simb+field.value.substring(2,4);
+		if( field.value.length == 6 )field.value = tmpYYYY.substring(0,2)+field.value.substring(0,2)+simb+field.value.substring(2,4)+simb+field.value.substring(4,6);
+		if( field.value.length == 8 )field.value = field.value.substring(0,4)+simb+field.value.substring(4,6)+simb+field.value.substring(6,8);
+	}
+
+	// 페이지 Action 처리
+	function jsOnSubmit( FormObj, url, method, target )
+	{
+	if( ! method )method="POST";
+	if( ! target )target="_top";
+		
+	FormObj.method = method;
+	FormObj.target = target;
+	FormObj.action = url;
+	FormObj.submit();	
+	}
+
+	function getHiddenString( extrHiddenName, extrHiddenVal )
+	{
+		var strForm = "";
+		for( k=0; k < extrHiddenName.length; k++)
+		{
+			strForm = strForm + "<input type='hidden' name='"+extrHiddenName[k]+"' id='"+extrHiddenName[k]+"' value='"+extrHiddenVal[k]+"'>";
+		}
+		
+		return strForm;
+	}
+
+	function appendFormHiddenData( formID, extrHiddenName, extrHiddenVal )
+	{
+		var strForm = getHiddenString( extrHiddenName, extrHiddenVal );
+		$("#"+formID).html(strForm);
+	}
+
+	//AJAX를 이용한 OnSubmit()
+	function ajaxOnSubmit( ajaxFormNM, goUrl, ajaxMethod, ajaxDivNM  )
+	{
+		if( ! ajaxMethod )ajaxMethod="POST";
+		if( ! ajaxDivNM )ajaxDivNM="";
+		
+		var frmNM = "form[name="+ajaxFormNM+"]";
+		var frmData = $("form[name="+ajaxFormNM+"]").serialize();
+		var Ret = "RD";
+
+		$.ajax({
+				type : ajaxMethod,
+				url : goUrl,
+				async : false,
+				cache : false,
+				data : frmData,
+				
+				beforeSend: function() 
+				{
+				},
+				success : function( Response ) 
+				{
+					//JSON return 인경우
+					if( Response.indexOf("JSON") > -1 && Response.indexOf("Y") > -1 && Response.indexOf(":") )
+					{
+						jsonCompResult( Response );
+					}
+					else if( ajaxDivNM != "" ) //HTML return 인경우
+					{
+						$("#"+ajaxDivNM).html('');
+						$("#"+ajaxDivNM).html(Response);
+					}
+				},
+				error : function(request, textStatus, errorThrown) 
+				{
+				},
+				complete: function() {
+				}
+		});	
+	}
+
+
+	//AJAX를 이용한 OnSubmit()
+	function ajaxInnerHtmlOnSubmit( ajaxFormNM, goUrl, ajaxDivNM, ajaxMethod )
+	{
+		if( ! ajaxMethod )ajaxMethod = "POST";
+		if( ! ajaxDivNM )ajaxDivNM = "";
+		
+		if( ajaxDivNM == "" )
+		{
+			alert("타겟 ID가 지정되지 않았습니다.")
+			return;
+		}
+		
+		var frmNM = "form[name="+ajaxFormNM+"]";
+		var frmData = $("form[name="+ajaxFormNM+"]").serialize();
+		
+		$.ajax({
+				type : ajaxMethod,
+				url : goUrl,
+				async : false,
+				cache : false,
+				data : frmData,
+			
+				beforeSend: function() 
+				{
+				},
+				success : function( Response ) 
+				{
+					//var str = $("#"+ajaxDivNM);
+					$("#"+ajaxDivNM).html(Response);
+				},
+				error : function(request, textStatus, errorThrown) 
+				{
+				},
+				complete: function() {
+				}
+		});	
+	}
+
+	//AJAX를 이용한 OnSubmit()
+	function ajaxAppndHtmlOnSubmit( ajaxFormNM, goUrl, ajaxDivNM, ajaxMethod )
+	{
+		if( ! ajaxMethod )ajaxMethod="POST";
+		if( ! ajaxDivNM )ajaxDivNM="";
+		
+		if( ajaxDivNM == "" )
+		{
+			alert("타겟 ID가 지정되지 않았습니다.")
+			return;
+		}
+		
+		var frmNM = "form[name="+ajaxFormNM+"]";
+		var frmData = $("form[name="+ajaxFormNM+"]").serialize();
+		
+		$.ajax({
+				type : ajaxMethod,
+				url : goUrl,
+				async : false,
+				cache : false,
+				data : frmData,
+		
+				beforeSend: function() 
+				{
+				},
+				success : function( Response ) 
+				{
+					var str = $("#"+ajaxDivNM);
+					$("#"+ajaxDivNM).append(Response);
+				},
+				error : function(request, textStatus, errorThrown) 
+				{
+				},
+				complete: function() {
+				}
+		});	
+	}
+
+	function ajaxCrudOnSubmit( ajaxFormNM, goUrl, ajaxMethod, goFunc  )
+	{
+		if( ! ajaxMethod )ajaxMethod="POST";
+		if( ! goFunc )goFunc="jsonCompResult";
+		
+		var frmNM = "form[name="+ajaxFormNM+"]";
+		var frmData = $("form[name="+ajaxFormNM+"]").serializeArray();
+
+		let formData = new FormData();
+
+		frmData.forEach(function(data) {
+			formData.append(data["name"], data["value"]);
+		});
+		
+		console.log($('input[name=upload_files]'))
+
+		if ($('input[name=upload_files]')[0].files[0] != undefined) {
+			formData.append('upload_files', $('input[name=upload_files]')[0].files[0]);
+		}
+
+		$.ajax({
+				type : ajaxMethod,
+				url : goUrl,
+				async : false,
+				cache : false,
+				processData: false,
+				contentType : false,
+				data : formData,
+				
+				beforeSend: function() 
+				{
+					console.log('beforesend')
+				},
+				success : function( Response ) 
+				{
+					var objFnc = goFunc+"( '"+Response+"' )";
+					setTimeout(objFnc,5);
+				},
+				error : function(request, textStatus, errorThrown) 
+				{
+					console.log('error')
+				},
+				complete: function() 
+				{
+					console.log('complete')
+				}
+		});	
+	}
+
+	function ajaxCrudMpartOnSubmit( ajaxFormNM, goUrl )
+	{
+		var form = document.getElementById(ajaxFormNM); 
+		var formData = new FormData(form);
+		
+		$.ajax({
+			url: goUrl,
+			data: formData,
+			processData: false,
+			contentType: false,
+			type: 'POST',
+			success: function(Response){
+				Ret="SUC";
+				jsonCompResult( Ret, Response );
+			}
+			});
+	}
+
+	function ajaxFormDataSubmit( formData, goUrl )
+	{
+		$.ajax({
+			url: goUrl,
+			data: formData,
+			processData: false,
+			contentType: false,
+			type: 'POST',
+			success: function(Response){
+				Ret="SUC";
+				jsonCompResult( Ret, Response );
+			}
+			});
+	}
+
+	function ajaxMutipartSubmit( formData, goUrl, goFunc )
+	{
+		if( ! goFunc )goFunc="jsonCompResult";
+		
+		$.ajax({
+			url: goUrl,
+			data: formData,
+			processData: false,
+			contentType: false,
+			type: 'POST',
+			success: function(Response){
+				var objFnc = goFunc+"( '"+Response+"' )";
+				setTimeout(objFnc,5);
+			}
+			});
+	}
+
+	//===============================================================================
+	//브라우저 관련 함수
+	//===============================================================================
+
+	function getIdIndex(obj)
+	{
+		var idNm = $(obj).attr('id');
+		var tagName = $(obj).prop('tagName');
+		var idxNm = tagName+"#"+idNm;
+		var idx = $(obj).index(idxNm);
+		
+		return idx;
+	}	
+		
+	function getInputIdIndex(obj)
+	{
+		var idNm = $(obj).attr('id');
+		var idx = $(obj).index("input#"+idNm);
+		
+		return idx;
+	}
+
+	function getInputIdToArryVal(idNm, idx)
+	{
+		return $("input#"+idNm)[idx].value;
+	}
+
+	function setInutIdToArryVal(idNm, idx, val)
+	{
+		$("input#"+idNm)[idx].value = val;
+	}
+
+	function getSelectIdToArryVal(idNm, idx)
+	{
+		return $("select#"+idNm)[idx].value;
+	}
+
+	function setSelectIdToArryVal(idNm, idx, val)
+	{
+		$("select#"+idNm)[idx].value = val;
+	}
+
+	function getRadioBoxIdToArryVal(idNm, idx)
+	{
+		return $("radio#"+idNm)[idx].value;
+	}
+
+	function getCheckBoxIdToArryVal(idNm, idx)
+	{
+		return $("checkbox#"+idNm)[idx].value;
+	}
+
+
+	//브라우져 넓이
+	function getBwWidth()
+	{
+		//브라우져 넓이
+		var browserWidth = document.body.clientWidth;
+		
+		return browserWidth;
+	}
+
+	//브라우져 높이
+	function getBwHeight()
+	{
+		//브라우져 넓이
+		var browserHeight = document.body.clientHeight;
+		
+		return browserHeight;
+	}
+
+	//스크롤 수직이동 위치 구하기
+	function getScrollTop()
+	{
+		return document.body.scrollTop;
+	}
+
+	//스크롤 수평이동 위치 구하기
+	function getScrollLeft()
+	{
+		return document.body.scrollLeft;
+	}
+
+	//스크롤 높이 구하기
+	function getScrollHeight()
+	{
+		return document.body.scrollHeight;
+	}
+
+	//브라우저 중앙X좌표 값구하기
+	function getCenterPosX( Width )
+	{
+		CenterPosLeft = (getBwWidth() - Width)/2; //브라우저세로사이즈
+		return CenterPosLeft;
+	}
+
+	//브라우저 중앙Y좌표 값구하기
+	function getCenterPosY( Height )
+	{
+		CenterPosTop = (getBwHeight() - Height)/2-GNVHeight; //브라우저가로사이즈
+		return CenterPosLeft;
+	}
+
+	//객체 위치정보 구하기
+	function getObjectPosXY(aTag){
+		var oTmp = aTag;
+		var pt = new Point(0,0);
+		do {
+			pt.x += oTmp.offsetLeft;
+			pt.y += oTmp.offsetTop;
+			oTmp = oTmp.offsetParent;
+		} while(oTmp.tagName!="BODY");
+		return pt;
+	}
+
+	//**********************************
+	//*    좌표를 나타내기 위한 객체
+	//**********************************
+	function Point(iX, iY){
+		this.x = iX;
+		this.y = iY;
+	}
+
+	//===============================================================================
+	//오브젝트사이즈 관련 함수
+	//===============================================================================
+	//오브젝트 가로세로사이즈 조정하기
+	function setObjWHSize( objID, objWidth, objHeight ){
+		if( objWidth > 0 )objID.style.width = objWidth;
+		if( objHeight > 0 )objID.style.height = objHeight;
+	}
+
+
+	//컨텐츠메인 DIV가로사이즈 자동 맞춤
+	function setObjLeftPos( TargetDivID, LeftPos ){
+		
+		TargetDivID.style.left = LeftPos;
+	}
+
+
+
+	//프로그레스바 설정
+	function setProgress( Div )
+	{
+		var clientHeight = getBwHeight();
+		
+		if( Div == "ON" )
+		{
+			progressDiv1.style.pixelTop = 0;
+			progressDiv1.style.height = clientHeight;
+			progressDiv1.style.visibility =  'visible'; 
+		}
+		else
+		{
+			progressDiv1.style.visibility =  'hidden'; 
+		}
+	}
+
+	//===============================================================================
+	//체크박스 모두선택 관련 함수
+	//===============================================================================
+	function setCheckBoxALL( objAll, objChk, obj )
+	{
+		var chkAllYN = objAll.checked;
+		var chkLength = objChk.length;
+		var chkAllVal = "N";
+		if( chkAllYN == true )chkAllVal = "Y";
+		
+		for( k = 1 ; k < chkLength; k++ )
+		{
+			objChk[k].checked = chkAllYN;
+			if( obj )obj[k].value = chkAllVal;
+		}
+	}
+
+	function setCheckBox( objAll, objChk, obj )
+	{
+		var chkYN = objChk.checked;
+		var chkVal = "N";
+		if( chkYN == true )chkVal = "Y";
+		if( objAll )objAll.checked = false;
+		if( obj )obj.value = chkVal;
+	}
+
+	//===============================================================================
+	//숫자 및 문자열 관련 함수
+	//===============================================================================
+	//백분율(%) 연산 결과 구하기
+	function getFromPercent( TargetData, Percent )
+	{
+		perRet = parseInt(TargetData * Percent / 100)
+
+		return perRet;
+	}
+
+	//백분율(%) 소수 2째자리까지 구하기 
+	function getToPercent( TargetData, divData )
+	{
+		Ret = parseInt( divData/TargetData * 100 * 100 );
+		
+		perRet = Ret / 100;
+
+		return perRet;
+	}
+
+
+
+	//숫자형식여부체크
+	function checkNumberFormat( strVal )
+	{
+	for (i=0; i<strVal.length; i++)
+	{
+		mmstr = strVal.substr(i,1).charCodeAt(0);
+		if (mmstr > 32 && mmstr < 48 || mmstr > 57 && mmstr < 65 || mmstr > 90 && mmstr < 97 || mmstr > 122 && mmstr < 44032 || mmstr > 63086)
+		{
+			return "false";
+			break;
+		}
+	}
+	}
+		
+	//공백제거
+	function Trim(str)
+	{ 
+	str = str.replace(/^\s*/,'').replace(/\s*$/, ''); 
+	return str; 
+	}
+
+
+	//===============================================================================
+	//날짜 관련 함수
+	//===============================================================================
+	function todayToStr( simb ) {
+		/* fix month zero base */
+		var d = new Date();
+		
+		var year = d.getFullYear();
+		var month = d.getMonth()+1;
+		var day = d.getDate();
+		
+		if( month < 10 )month="0"+month;
+		if( day < 10 )day="0"+day;
+		
+		return year + simb + month + simb + day;
+	};
+
+	function AddDate( YYYY, MM, DD, AddDayCnt )
+	{
+		var tmpDate = new Date(YYYY, MM, DD);
+		var resDate = new Date(tmpDate.setDate(tmpDate.getDate()+AddDayCnt));
+		
+		var YYYY = resDate.getYear();
+		var MM = resDate.getMonth();
+		var DD = resDate.getDate();
+		
+		if( MM < 10 )MM = "0"+MM;
+		if( DD < 10 )DD = "0"+DD;
+		
+		var resStr = YYYY+"-"+MM+"-"+DD;
+		
+		//alert(resStr);
+		
+		return resStr;
+	}
+
+	function FileDownload( FormObj, DWN_FILE_NAME, DWN_FILE_PATH )
+	{
+		FormObj.DWN_FILE_NAME.value = DWN_FILE_NAME;
+		FormObj.DWN_FILE_PATH.value = DWN_FILE_PATH;
+		
+		FormObj.method="post";
+		FormObj.action = "/web/Common/FileDownload.do";
+		FormObj.submit();
+	}
+
+	function initDateFicker()
+	{
+		$('.jquery-calendar').each(function () {
+			$(this).calendar();
+		});
+		$('.date-picker:text').each(function () {
+			$(this).datePicker();
+		});
+	}
+
+	function getPrePageUrl()
+	{
+		var referrer =  document.referrer;
+		return referrer;
+	}
+
+	function logOut()
+	{
+		document.location = "/web/logout.do";
+	}
+
+
+	function setSnsToken()
+	{
+		alert("######");
+	}
+
+	//롤오버이미지
+	function MM_swapImgRestore() { //v3.0
+	let i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+	}
+
+	function MM_preloadImages() { //v3.0
+		var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+		var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+		if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+	}
+
+	function MM_findObj(n, d) { //v4.01
+		var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+		d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+		if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+		for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+		if(!x && d.getElementById) x=d.getElementById(n); return x;
+	}
+
+	function MM_swapImage() { //v3.0
+	let i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+	if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+	}
+
+	// iFrame 크기 자동 조절
+	function resizeHeight(frame) {
+		if(frame == null) {
+			return false;
+		}
+		
+		frame.height = "0px";
+		
+		let iframeHeight = frame.contentWindow.document.body.scrollHeight;
+		frame.height = iframeHeight + 5;
+	}
+
+</script>
