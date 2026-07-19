@@ -1,88 +1,82 @@
 # 구현 체크리스트
 
-> 계획: `docs/plan.md` 참조. 신규 Next.js 프로젝트 경로: `C:\projects\gov-trend-next`
+> 계획: `docs/plan.md` (v2, React Pure JS + Spring Boot) 참조.
+> 이번 라운드는 **프론트엔드만** 진행. 백엔드(Spring Boot)는 기존에 작업해둔 프로젝트 코드를 기반으로 이후 별도 진행 예정 — 아직 코드 없음.
 
 ---
 
-## Phase 1 — 프로젝트 기반 설정 ✅
+## Phase 1 — 프론트엔드 기반 설정 ✅
 
-- [x] `create-next-app` (TypeScript, App Router, Tailwind CSS v4, src/ 디렉터리)
-- [x] 추가 패키지 설치: `iron-session`, `pg`, `@types/pg`
-- [x] Pretendard 폰트 복사 (`src/app/fonts/` 4종: Light/Regular/Medium/SemiBold)
-- [x] `src/app/layout.tsx` — Pretendard 로컬 폰트 설정
-- [x] `src/app/globals.css` — Tailwind v4 기반 글로벌 스타일
-- [x] `src/app/page.tsx` — `/login` 리다이렉트 stub
-- [x] `src/types/index.ts` — 공유 타입 정의
-- [x] `.env.local` — 환경 변수 템플릿 (실제 값 입력 필요)
-- [ ] shadcn/ui 초기화 — Phase 4 시작 전에 진행 예정 (Phase 1-3에서 불필요)
+- [x] `npm create vite@latest frontend -- --template react` (JavaScript, TypeScript 미사용)
+- [x] 추가 패키지: `react-router-dom`, `react-hook-form`, `zod`, `@hookform/resolvers`, `echarts`, `echarts-for-react`, `prop-types`
+- [x] Tailwind CSS v4 설정 (`postcss.config.js`, `src/styles/index.css` `@theme` 디자인 토큰 — brand 컬러 스케일 초안)
+- [x] Pretendard 폰트 복사 (`frontend/public/fonts/` 4종) + `@font-face` 등록
+- [x] `vite.config.js` — dev proxy(`/api` → `localhost:8080`)로 로컬 CORS/SameSite 이슈 회피
+- [x] `src/lib/apiClient.js` — fetch 래퍼 (credentials 포함, resCd 공통 처리, 세션 만료 리스너)
+- [x] `src/constants/domain.js` — 지역코드, 요일값, 응답코드 등 도메인 상수
+- [x] `src/lib/date.js` — 날짜 유틸 (기본값, 범위 계산)
 
-## Phase 2 — 인프라 레이어 ✅
+## Phase 2 — 백엔드 기반 설정 ⬜ (보류)
 
-- [x] `src/lib/db.ts` — pg Pool 싱글톤
-- [x] `src/lib/query.ts` — `executeQuery` 래퍼 (getOne / getList / execute)
-- [x] `src/lib/session.ts` — iron-session 설정 (TTL 5400s)
-- [x] `src/proxy.ts` — 세션 검증 proxy (Next.js 16 명칭)
+- [ ] 기존에 작업해둔 Spring Boot 프로젝트 코드 확인/이관 필요 — **아직 코드 없음**
+- [ ] 이후 라운드에서 `backend/` 스캐폴드 진행 예정
 
-## Phase 3 — 로그인 흐름 ✅
+## Phase 3 — 로그인 흐름 ✅ (프론트엔드만)
 
-- [x] `src/app/api/auth/login/route.ts`
-- [x] `src/app/api/auth/logout/route.ts`
-- [x] `src/components/auth/LogoutButton.tsx`
-- [x] `src/app/login/page.tsx`
-- [x] `src/app/dashboard/page.tsx` (보호된 stub)
-- [x] `src/app/page.tsx` — 세션 유무 기반 분기 리다이렉트로 교체
-- [x] `src/types/index.ts` — SessionData 업데이트 (`isLoggedIn`, `userId`, `loginAt`)
-- [x] `src/proxy.ts` — 세션 체크 필드 수정
+- [x] `src/lib/apiClient.js` 기반 `/api/auth/login|logout|session` 호출부
+- [x] `src/components/auth/LoginForm.jsx` (React Hook Form + Zod)
+- [x] `src/components/auth/LogoutButton.jsx`
+- [x] `src/pages/LoginPage.jsx`
+- [x] `src/hooks/useSessionStatus.js` — `GET /api/auth/session` 기반 세션 확인
+- [x] `src/router.jsx` — `RootRedirect`, `PrivateRoute` (세션 가드)
+- [ ] **실제 백엔드 연동 검증** — 백엔드 미구현으로 미검증 (Phase 2 완료 후 진행)
 
 ## Phase 4 — 공통 UI 컴포넌트 ✅
 
-- [x] shadcn/ui 초기화 — 의도적으로 보류 (plain Tailwind로 충분함, Phase 5 이후 필요 시 추가)
-- [x] `src/context/ModalContext.tsx` — ModalProvider, useModal hook
-- [x] `src/components/ui/AlertModal.tsx` — ModalContext 연동, ESC/backdrop 닫기, 자동 포커스
-- [x] `src/components/ui/ConfirmModal.tsx` — ModalContext 연동, ESC 닫기, 자동 포커스
-- [x] `src/components/ui/Loader.tsx` — visible prop, optional message, z-40 오버레이
-- [x] `src/app/providers.tsx` — Client 경계 래퍼 (ModalProvider + 모달 마운트)
-- [x] `src/app/layout.tsx` — Providers 래퍼 추가
-- [x] `src/components/ui/ModalDemoButtons.tsx` — 임시 테스트 컴포넌트 (Phase 5에서 제거)
-- [x] `src/app/dashboard/page.tsx` — ModalDemoButtons 포함한 stub으로 업데이트
+- [x] `src/context/ModalContext.jsx` — `openAlert`, `openConfirm`
+- [x] `src/components/ui/AlertModal.jsx`, `ConfirmModal.jsx` — ESC/backdrop 닫기, 자동 포커스
+- [x] `src/components/ui/Loader.jsx` — portal 기반 전체화면 오버레이
+- [x] `src/components/ui/Button.jsx`, `Select.jsx` — Tailwind 커스텀 디자인 시스템 (컴포넌트 라이브러리 미사용)
+- [x] `src/App.jsx` — `ModalProvider` + `RouterProvider` 루트 조립
 
-## Phase 5 — 정압기 검색 ✅
+## Phase 5 — 정압기 검색 ✅ (프론트엔드만)
 
-- [x] `src/app/api/governors/list/route.ts` — Zod 검증 + 파라미터화 SQL (AS-IS 재현)
-- [x] `src/components/dashboard/SearchForm.tsx` — React Hook Form + Zod, 날짜 기본값 오늘-7일/오늘
-- [x] `src/components/dashboard/GovernorTable.tsx` — 체크박스, 최대 3개 선택, 빈 상태
-- [x] `src/components/dashboard/DashboardContent.tsx` (신규) — Client Component 상태 보유
-- [x] `src/hooks/useGovernorApi.ts` — API 호출 훅 (searchGovernors)
-- [x] `src/app/dashboard/page.tsx` — ModalDemoButtons 제거, DashboardContent 통합
-- [x] `src/types/index.ts` — GovernorSearchFormValues, GovernorListRequest, GovernorListResponse 추가
-- [x] `.env.local` — LOGIN_PASSWORD 값을 따옴표로 감싸 # 주석 처리 문제 수정
+- [x] `src/components/dashboard/SearchForm.jsx` — React Hook Form + Zod, 날짜 기본값 오늘-7일/오늘, 30일 범위 검증
+- [x] `src/components/dashboard/GovernorTable.jsx` — 체크박스, 최대 3개 선택, 빈 상태 문구
+- [x] `src/hooks/useGovernorApi.js` — `searchGovernors`, `fetchGovernorStats`, `uploadGovernorExcel`
+- [ ] **실제 검색 동작 검증** — 백엔드 미구현으로 미검증
 
-## Phase 6 — 통계 조회 및 차트 ⬜
+## Phase 6 — 통계 조회 및 차트 ✅ (프론트엔드만)
 
-- [ ] `src/app/api/governors/stats/route.ts`
-- [ ] `src/components/dashboard/StatsChart.tsx`
-- [ ] `src/components/dashboard/DataTable.tsx`
-- [ ] `src/components/dashboard/SummaryTables.tsx`
+- [x] `src/components/dashboard/StatsChart.jsx` — ECharts, `dataZoom`(inside+slider), Y축 1.7–3.0 고정/자동확장
+- [x] `src/components/dashboard/DataTable.jsx`
+- [x] `src/components/dashboard/SummaryTables.jsx` — MIN/AVG/MAX (프론트엔드 계산)
+- [ ] **실제 차트 렌더링 검증** — 백엔드 미구현으로 미검증
 
-## Phase 7 — 엑셀 업로드 + 트랜잭션 ⬜
+## Phase 7 — 엑셀 업로드 + 트랜잭션 ⬜ (프론트엔드 UI만)
 
-- [ ] 추가 패키지: `exceljs`, `react-hook-form`, `zod`, `@hookform/resolvers`
-- [ ] `src/lib/excel-parser.ts`
-- [ ] `src/app/api/crud/route.ts`
-- [ ] `src/app/api/transactions/create/route.ts`
-- [ ] `src/app/api/transactions/in-progress/route.ts`
-- [ ] `src/app/api/transactions/rollback/route.ts`
+- [x] `src/components/dashboard/ExcelUpload.jsx` — 파일 선택 → `FormData` → `/api/crud`
+- [ ] 트랜잭션 create/in-progress/rollback — UI 없음 (research.md 2d: 백엔드 전용 기능), 백엔드 구현 대상
+- [ ] `docs/references/sample.xlsx` 대조 검증 — 백엔드(Apache POI 파싱) 완료 후 가능
 
 ## Phase 8 — 마무리 ⬜
 
-- [ ] 전체 컴포넌트 조합 최종 검증
-- [ ] 세션 만료 시나리오 E2E 테스트
-- [ ] 브라우저 UI 최종 점검 (레이아웃, 1280px, 폰트, 모달, 로더)
+- [x] `src/pages/DashboardPage.jsx` — SearchForm/GovernorTable/StatsChart/DataTable/SummaryTables/ExcelUpload/LogoutButton 전체 조합
+- [x] `npm run build`, `npm run lint` 통과 확인
+- [ ] 세션 만료 시나리오 E2E — 백엔드 필요
+- [ ] 브라우저 실동작 점검 (레이아웃, 반응형, 폰트, 모달, 로더) — 백엔드 없이는 로그인 이후 화면 접근 불가, 목업 데이터로 우선 점검 검토 가능
 
 ---
 
-## 사전 완료 필요 (구현 전 인간 결정)
+## 다음 라운드 (백엔드 착수 시 진행)
 
-- [ ] `.env.local` 실제 값 입력 (DB 연결정보, SESSION_SECRET, LOGIN_ID, LOGIN_PASSWORD)
+- [ ] 기존에 작업해둔 Spring Boot 프로젝트 코드 확보 후 `backend/`로 이관 또는 신규 스캐폴드 결정
+- [ ] `docs/plan.md` 섹션 13 Phase 2 이후 순서대로 진행
+- [ ] 백엔드 완성 후 프론트엔드 전 구간 실동작 재검증 (현재 목록의 "미검증" 항목 전체)
+
+## 사전 완료 필요 (구현 전 인간 결정, 여전히 미해결)
+
+- [ ] 로그인 계정 값 결정 (설정값 단일 계정)
 - [ ] `gvrnr_mng_sys_app_transaction` 실제 테이블명 운영 DB에서 확인
-- [ ] Phase 7 시작 전 `docs/references/sample.xlsx` 실제 파싱 검증
+- [ ] 디자인 토큰(색상/타이포/레이아웃 컨셉) — 현재 임시로 blue 계열 brand 컬러 + slate 뉴트럴로 초안 적용. 확정 아님, 피드백 필요
+- [ ] 운영 배포 토폴로지 결정 (동일 도메인 리버스 프록시 vs 완전 분리 도메인)
