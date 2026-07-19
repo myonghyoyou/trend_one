@@ -71,8 +71,8 @@ export default function SearchForm({ onSearch, isSearching }) {
       </Field>
 
       <div className="col-span-2 flex items-end sm:col-span-3 lg:col-span-6">
-        <Button type="submit" disabled={isSearching} className="w-full sm:w-auto">
-          {isSearching ? "검색 중..." : "검색"}
+        <Button type="submit" loading={isSearching} className="w-full sm:w-auto">
+          검색
         </Button>
       </div>
     </form>

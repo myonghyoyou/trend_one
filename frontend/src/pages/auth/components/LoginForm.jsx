@@ -45,8 +45,8 @@ export default function LoginForm() {
 
       {submitError && <p className="text-sm text-red-600">{submitError}</p>}
 
-      <Button type="submit" disabled={isSubmitting} className="mt-2 w-full">
-        {isSubmitting ? "로그인 중..." : "로그인"}
+      <Button type="submit" loading={isSubmitting} className="mt-2 w-full">
+        로그인
       </Button>
     </form>
   );
