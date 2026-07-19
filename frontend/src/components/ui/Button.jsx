@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import PropTypes from "prop-types";
+import { cn } from "../../utils/cn.js";
 
 const VARIANT_CLASSES = {
   primary: "bg-brand-600 text-white hover:bg-brand-700 disabled:bg-brand-300",
@@ -15,7 +16,11 @@ const Button = forwardRef(function Button(
     <button
       ref={ref}
       type={type}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed ${VARIANT_CLASSES[variant]} ${className}`}
+      className={cn(
+        "inline-flex items-center justify-center gap-1.5 rounded-md px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed",
+        VARIANT_CLASSES[variant],
+        className
+      )}
       {...props}
     />
   );
