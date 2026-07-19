@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/ui/Button.jsx";
-import { apiPost } from "../../../utils/apiClient.js";
+import { logout } from "../../../api/auth.js";
 
 export default function LogoutButton() {
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ export default function LogoutButton() {
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
-      await apiPost("/api/auth/logout", {});
+      await logout();
     } finally {
       navigate("/login", { replace: true });
     }

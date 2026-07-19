@@ -3,7 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
-import { apiPost, ApiError } from "../../../utils/apiClient.js";
+import { login } from "../../../api/auth.js";
+import { ApiError } from "../../../api/client.js";
 import Button from "../../../components/ui/Button.jsx";
 
 const loginSchema = z.object({
@@ -23,7 +24,7 @@ export default function LoginForm() {
   const onSubmit = async (values) => {
     setSubmitError("");
     try {
-      await apiPost("/api/auth/login", values);
+      await login(values);
       navigate("/dashboard", { replace: true });
     } catch (error) {
       if (error instanceof ApiError) {

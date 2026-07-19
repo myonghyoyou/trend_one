@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiGet } from "../utils/apiClient.js";
+import { getSession } from "../api/auth.js";
 
 /**
  * GET /api/auth/session 을 호출해 현재 세션 유효성을 확인한다.
@@ -14,7 +14,7 @@ export function useSessionStatus() {
   useEffect(() => {
     let cancelled = false;
 
-    apiGet("/api/auth/session")
+    getSession()
       .then((res) => {
         if (!cancelled) setStatus(res.isLoggedIn ? "authenticated" : "unauthenticated");
       })

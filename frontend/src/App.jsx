@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routers/routes.jsx";
 import { ModalProvider } from "./contexts/ModalContext.jsx";
-import { setOnSessionExpired } from "./utils/apiClient.js";
+import { setOnSessionExpired } from "./api/client.js";
 
 export default function App() {
   useEffect(() => {

@@ -10,8 +10,8 @@ import Select from "../../components/ui/Select.jsx";
 import Button from "../../components/ui/Button.jsx";
 import Loader from "../../components/ui/Loader.jsx";
 import { useModal } from "../../contexts/ModalContext.jsx";
-import { searchGovernors, fetchGovernorStats } from "../../hooks/api/useGovernorApi.js";
-import { ApiError } from "../../utils/apiClient.js";
+import { searchGovernors, fetchGovernorStats } from "../../api/governors.js";
+import { ApiError } from "../../api/client.js";
 import { INTERVAL_OPTIONS } from "../../constants/domain.js";
 
 const DEFAULT_INTERVAL = "1";
