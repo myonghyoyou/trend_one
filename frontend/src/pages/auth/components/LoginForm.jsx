@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../../../api/auth.js";
 import { resolveErrorMessage } from "../../../api/client.js";
 import Button from "../../../components/ui/Button.jsx";
+import Field from "../../../components/ui/Field.jsx";
+import TextInput from "../../../components/ui/TextInput.jsx";
 
 const loginSchema = z.object({
   loginId: z.string().min(1, "아이디를 입력하세요."),
@@ -33,33 +35,13 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex w-full max-w-sm flex-col gap-4">
-      <div>
-        <label htmlFor="loginId" className="mb-1 block text-sm font-medium text-slate-700">
-          아이디
-        </label>
-        <input
-          id="loginId"
-          type="text"
-          autoComplete="username"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          {...register("loginId")}
-        />
-        {errors.loginId && <p className="mt-1 text-xs text-red-600">{errors.loginId.message}</p>}
-      </div>
+      <Field label="아이디" htmlFor="loginId" error={errors.loginId?.message}>
+        <TextInput id="loginId" type="text" autoComplete="username" {...register("loginId")} />
+      </Field>
 
-      <div>
-        <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-700">
-          비밀번호
-        </label>
-        <input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          {...register("password")}
-        />
-        {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
-      </div>
+      <Field label="비밀번호" htmlFor="password" error={errors.password?.message}>
+        <TextInput id="password" type="password" autoComplete="current-password" {...register("password")} />
+      </Field>
 
       {submitError && <p className="text-sm text-red-600">{submitError}</p>}
 

@@ -4,6 +4,8 @@ import { z } from "zod";
 import PropTypes from "prop-types";
 import Button from "../../../components/ui/Button.jsx";
 import Select from "../../../components/ui/Select.jsx";
+import Field from "../../../components/ui/Field.jsx";
+import TextInput from "../../../components/ui/TextInput.jsx";
 import { REGION_OPTIONS, INSPECTION_DAY_OPTIONS, MAX_SEARCH_DATE_RANGE_DAYS } from "../../../constants/domain.js";
 import { dateDiffDays, today, daysAgo } from "../../../utils/dateUtil.js";
 
@@ -42,42 +44,19 @@ export default function SearchForm({ onSearch, isSearching }) {
       onSubmit={handleSubmit(onSearch)}
       className="grid grid-cols-2 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-3 lg:grid-cols-6"
     >
-      <div className="col-span-1">
-        <label htmlFor="startDate" className="mb-1 block text-xs font-medium text-slate-600">
-          시작일
-        </label>
-        <input
-          id="startDate"
-          type="date"
-          className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          {...register("startDate")}
-        />
-      </div>
+      <Field label="시작일" htmlFor="startDate" size="sm" className="col-span-1">
+        <TextInput id="startDate" type="date" size="sm" {...register("startDate")} />
+      </Field>
 
-      <div className="col-span-1">
-        <label htmlFor="endDate" className="mb-1 block text-xs font-medium text-slate-600">
-          종료일
-        </label>
-        <input
-          id="endDate"
-          type="date"
-          className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          {...register("endDate")}
-        />
-        {errors.endDate && <p className="mt-1 text-xs text-red-600">{errors.endDate.message}</p>}
-      </div>
+      <Field label="종료일" htmlFor="endDate" size="sm" className="col-span-1" error={errors.endDate?.message}>
+        <TextInput id="endDate" type="date" size="sm" {...register("endDate")} />
+      </Field>
 
-      <div className="col-span-1">
-        <label htmlFor="srchCity" className="mb-1 block text-xs font-medium text-slate-600">
-          지역
-        </label>
+      <Field label="지역" htmlFor="srchCity" size="sm" className="col-span-1">
         <Select id="srchCity" options={REGION_OPTIONS} placeholder="전체" className="w-full" {...register("srchCity")} />
-      </div>
+      </Field>
 
-      <div className="col-span-1">
-        <label htmlFor="inspctDay" className="mb-1 block text-xs font-medium text-slate-600">
-          점검요일
-        </label>
+      <Field label="점검요일" htmlFor="inspctDay" size="sm" className="col-span-1">
         <Select
           id="inspctDay"
           options={INSPECTION_DAY_OPTIONS}
@@ -85,21 +64,11 @@ export default function SearchForm({ onSearch, isSearching }) {
           className="w-full"
           {...register("inspctDay")}
         />
-      </div>
+      </Field>
 
-      <div className="col-span-2">
-        <label htmlFor="srchCntnt" className="mb-1 block text-xs font-medium text-slate-600">
-          정압기명
-        </label>
-        <input
-          id="srchCntnt"
-          type="text"
-          placeholder="정압기명 검색"
-          className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          {...register("srchCntnt")}
-        />
-        {errors.srchCntnt && <p className="mt-1 text-xs text-red-600">{errors.srchCntnt.message}</p>}
-      </div>
+      <Field label="정압기명" htmlFor="srchCntnt" size="sm" className="col-span-2" error={errors.srchCntnt?.message}>
+        <TextInput id="srchCntnt" type="text" placeholder="정압기명 검색" size="sm" {...register("srchCntnt")} />
+      </Field>
 
       <div className="col-span-2 flex items-end sm:col-span-3 lg:col-span-6">
         <Button type="submit" disabled={isSearching} className="w-full sm:w-auto">
