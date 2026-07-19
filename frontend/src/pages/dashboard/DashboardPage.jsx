@@ -11,7 +11,7 @@ import Button from "../../components/ui/Button.jsx";
 import Loader from "../../components/ui/Loader.jsx";
 import { useModal } from "../../contexts/ModalContext.jsx";
 import { searchGovernors, fetchGovernorStats } from "../../api/governors.js";
-import { ApiError } from "../../api/client.js";
+import { resolveErrorMessage } from "../../api/client.js";
 import { INTERVAL_OPTIONS } from "../../constants/domain.js";
 
 const DEFAULT_INTERVAL = "1";
@@ -36,7 +36,7 @@ export default function DashboardPage() {
       setStatsData(null);
       setLastSearchParams(values);
     } catch (error) {
-      openAlert(error instanceof ApiError ? error.message : "검색 중 오류가 발생했습니다.", "FAIL");
+      openAlert(resolveErrorMessage(error, "검색 중 오류가 발생했습니다."), "FAIL");
     } finally {
       setSearching(false);
     }
@@ -64,7 +64,7 @@ export default function DashboardPage() {
       });
       setStatsData(res);
     } catch (error) {
-      openAlert(error instanceof ApiError ? error.message : "조회 중 오류가 발생했습니다.", "FAIL");
+      openAlert(resolveErrorMessage(error, "조회 중 오류가 발생했습니다."), "FAIL");
     } finally {
       setLoadingStats(false);
     }

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../../api/auth.js";
-import { ApiError } from "../../../api/client.js";
+import { resolveErrorMessage } from "../../../api/client.js";
 import Button from "../../../components/ui/Button.jsx";
 
 const loginSchema = z.object({
@@ -27,11 +27,7 @@ export default function LoginForm() {
       await login(values);
       navigate("/dashboard", { replace: true });
     } catch (error) {
-      if (error instanceof ApiError) {
-        setSubmitError(error.message);
-      } else {
-        setSubmitError("로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-      }
+      setSubmitError(resolveErrorMessage(error, "로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."));
     }
   };
 

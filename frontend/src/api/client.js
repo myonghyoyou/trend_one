@@ -19,6 +19,16 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * ApiError면 서버 메시지를, 아니면 fallback을 반환한다.
+ * @param {unknown} error
+ * @param {string} fallback
+ * @returns {string}
+ */
+export function resolveErrorMessage(error, fallback) {
+  return error instanceof ApiError ? error.message : fallback;
+}
+
 let sessionExpiredListener = null;
 
 /** @param {() => void} listener */

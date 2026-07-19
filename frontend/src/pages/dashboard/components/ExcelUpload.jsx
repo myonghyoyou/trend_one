@@ -4,7 +4,7 @@ import Button from "../../../components/ui/Button.jsx";
 import Loader from "../../../components/ui/Loader.jsx";
 import { useModal } from "../../../contexts/ModalContext.jsx";
 import { uploadGovernorExcel } from "../../../api/governors.js";
-import { ApiError } from "../../../api/client.js";
+import { resolveErrorMessage } from "../../../api/client.js";
 
 export default function ExcelUpload({ onUploaded }) {
   const fileInputRef = useRef(null);
@@ -24,7 +24,7 @@ export default function ExcelUpload({ onUploaded }) {
       await uploadGovernorExcel(formData);
       openAlert("업로드가 완료되었습니다.", "SUCCESS", onUploaded);
     } catch (error) {
-      const message = error instanceof ApiError ? error.message : "업로드 중 오류가 발생했습니다.";
+      const message = resolveErrorMessage(error, "업로드 중 오류가 발생했습니다.");
       openAlert(message, "FAIL");
     } finally {
       setUploading(false);
