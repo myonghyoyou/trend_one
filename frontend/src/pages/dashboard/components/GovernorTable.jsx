@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
-import DataGrid from "../../../components/ui/DataGrid.jsx";
-import { INSPECTION_DAY_OPTIONS, MAX_SELECTED_GOVERNORS } from "../../../constants/domain.js";
+import DataGrid from "@/components/ui/DataGrid.jsx";
+import { INSPECTION_DAY_OPTIONS, MAX_SELECTED_GOVERNORS } from "@/constants/domain.js";
 
 const DAY_LABEL_BY_CODE = Object.fromEntries(INSPECTION_DAY_OPTIONS.map((o) => [o.value, o.label]));
 

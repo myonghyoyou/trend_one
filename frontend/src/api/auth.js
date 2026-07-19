@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "./client.js";
+import { apiGet, apiPost } from "@/api/client.js";
 
 /**
  * 인증 관련 엔드포인트를 한곳에 모은 얇은 래퍼.

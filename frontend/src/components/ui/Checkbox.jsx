@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import PropTypes from "prop-types";
-import { cn } from "../../utils/cn.js";
+import { cn } from "@/utils/cn.js";
 
 /**
  * 스타일링된 네이티브 체크박스. brand 색으로 강조한다.

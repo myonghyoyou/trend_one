@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
-import Checkbox from "./Checkbox.jsx";
-import { cn } from "../../utils/cn.js";
+import Checkbox from "@/components/ui/Checkbox.jsx";
+import { cn } from "@/utils/cn.js";
 
 const BODY_Y = { md: "py-2", sm: "py-1.5" };
 

@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import PropTypes from "prop-types";
-import { cn } from "../../utils/cn.js";
+import { cn } from "@/utils/cn.js";
 
 /**
  * 스타일링된 네이티브 select. 옵션 목록 기반 드롭다운(지역, 요일, 간격 선택 등)에 사용한다.

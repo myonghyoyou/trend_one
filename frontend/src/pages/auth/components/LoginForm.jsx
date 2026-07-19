@@ -3,11 +3,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
-import { login } from "../../../api/auth.js";
-import { resolveErrorMessage } from "../../../api/client.js";
-import Button from "../../../components/ui/Button.jsx";
-import Field from "../../../components/ui/Field.jsx";
-import TextInput from "../../../components/ui/TextInput.jsx";
+import { login } from "@/api/auth.js";
+import { resolveErrorMessage } from "@/api/client.js";
+import Button from "@/components/ui/Button.jsx";
+import Field from "@/components/ui/Field.jsx";
+import TextInput from "@/components/ui/TextInput.jsx";
 
 const loginSchema = z.object({
   loginId: z.string().min(1, "아이디를 입력하세요."),

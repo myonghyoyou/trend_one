@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
-import Loader from "../components/ui/Loader.jsx";
-import { useSessionStatus } from "../hooks/useSessionStatus.js";
+import Loader from "@/components/ui/Loader.jsx";
+import { useSessionStatus } from "@/hooks/useSessionStatus.js";
 
 /**
  * 인증된 사용자만 하위 라우트에 접근하도록 막는 레이아웃 가드.

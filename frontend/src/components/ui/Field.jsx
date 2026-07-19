@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
-import ErrorMessage from "./ErrorMessage.jsx";
-import { cn } from "../../utils/cn.js";
+import ErrorMessage from "@/components/ui/ErrorMessage.jsx";
+import { cn } from "@/utils/cn.js";
 
 const LABEL_CLASSES = {
   sm: "text-xs text-slate-600",

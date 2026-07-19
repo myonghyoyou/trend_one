@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import PropTypes from "prop-types";
-import Button from "./Button.jsx";
+import Button from "@/components/ui/Button.jsx";
 
 /**
  * ModalContext가 관리하는 Confirm 모달. 직접 마운트하지 말고 useModal().openConfirm()를 사용한다.

@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import PropTypes from "prop-types";
-import { cn } from "../../utils/cn.js";
+import { cn } from "@/utils/cn.js";
 
 const VARIANT_CLASSES = {
   primary: "bg-brand-600 text-white hover:bg-brand-700 disabled:bg-brand-300",

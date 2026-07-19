@@ -1,18 +1,18 @@
 import { useState } from "react";
-import SearchForm from "./components/SearchForm.jsx";
-import GovernorTable from "./components/GovernorTable.jsx";
-import StatsChart from "./components/StatsChart.jsx";
-import DataTable from "./components/DataTable.jsx";
-import SummaryTables from "./components/SummaryTables.jsx";
-import ExcelUpload from "./components/ExcelUpload.jsx";
-import LogoutButton from "./components/LogoutButton.jsx";
-import Select from "../../components/ui/Select.jsx";
-import Button from "../../components/ui/Button.jsx";
-import Loader from "../../components/ui/Loader.jsx";
-import { useModal } from "../../contexts/ModalContext.jsx";
-import { searchGovernors, fetchGovernorStats } from "../../api/governors.js";
-import { resolveErrorMessage } from "../../api/client.js";
-import { INTERVAL_OPTIONS } from "../../constants/domain.js";
+import SearchForm from "@/pages/dashboard/components/SearchForm.jsx";
+import GovernorTable from "@/pages/dashboard/components/GovernorTable.jsx";
+import StatsChart from "@/pages/dashboard/components/StatsChart.jsx";
+import DataTable from "@/pages/dashboard/components/DataTable.jsx";
+import SummaryTables from "@/pages/dashboard/components/SummaryTables.jsx";
+import ExcelUpload from "@/pages/dashboard/components/ExcelUpload.jsx";
+import LogoutButton from "@/pages/dashboard/components/LogoutButton.jsx";
+import Select from "@/components/ui/Select.jsx";
+import Button from "@/components/ui/Button.jsx";
+import Loader from "@/components/ui/Loader.jsx";
+import { useModal } from "@/contexts/ModalContext.jsx";
+import { searchGovernors, fetchGovernorStats } from "@/api/governors.js";
+import { resolveErrorMessage } from "@/api/client.js";
+import { INTERVAL_OPTIONS } from "@/constants/domain.js";
 
 const DEFAULT_INTERVAL = "1";
 

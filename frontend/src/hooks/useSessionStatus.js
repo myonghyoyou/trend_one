@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getSession } from "../api/auth.js";
+import { getSession } from "@/api/auth.js";
 
 /**
  * GET /api/auth/session 을 호출해 현재 세션 유효성을 확인한다.

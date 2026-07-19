@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import DataGrid from "../../../components/ui/DataGrid.jsx";
+import DataGrid from "@/components/ui/DataGrid.jsx";
 
 /**
  * 측정 데이터 테이블. xAxisList와 각 정압기의 gvrnr_press2 배열은 동일한 길이로 인덱스 정렬되어 있다고 가정한다

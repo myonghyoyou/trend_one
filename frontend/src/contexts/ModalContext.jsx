@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import PropTypes from "prop-types";
-import AlertModal from "../components/ui/AlertModal.jsx";
-import ConfirmModal from "../components/ui/ConfirmModal.jsx";
+import AlertModal from "@/components/ui/AlertModal.jsx";
+import ConfirmModal from "@/components/ui/ConfirmModal.jsx";
 
 const ModalContext = createContext(null);
 

@@ -1,4 +1,4 @@
-import { apiPost, apiPostForm } from "./client.js";
+import { apiPost, apiPostForm } from "@/api/client.js";
 
 /**
  * @param {{ startDate: string, endDate: string, srchCity?: string, inspctDay?: string, srchCntnt?: string }} params

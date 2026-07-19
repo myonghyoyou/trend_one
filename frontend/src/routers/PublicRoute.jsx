@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
-import Loader from "../components/ui/Loader.jsx";
-import { useSessionStatus } from "../hooks/useSessionStatus.js";
+import Loader from "@/components/ui/Loader.jsx";
+import { useSessionStatus } from "@/hooks/useSessionStatus.js";
 
 /**
  * 비로그인 전용 라우트(로그인 등) 가드.

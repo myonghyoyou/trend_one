@@ -1,8 +1,8 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
-import PrivateRoute from "./PrivateRoute.jsx";
-import PublicRoute from "./PublicRoute.jsx";
-import LoginPage from "../pages/auth/LoginPage.jsx";
-import DashboardPage from "../pages/dashboard/DashboardPage.jsx";
+import PrivateRoute from "@/routers/PrivateRoute.jsx";
+import PublicRoute from "@/routers/PublicRoute.jsx";
+import LoginPage from "@/pages/auth/LoginPage.jsx";
+import DashboardPage from "@/pages/dashboard/DashboardPage.jsx";
 
 export const router = createBrowserRouter([
   {
