@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiGet } from "../lib/apiClient.js";
+import { apiGet } from "../utils/apiClient.js";
 
 /**
  * GET /api/auth/session 을 호출해 현재 세션 유효성을 확인한다.

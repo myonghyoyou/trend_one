@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../ui/Button.jsx";
-import { apiPost } from "../../lib/apiClient.js";
+import { apiPost } from "../../utils/apiClient.js";
 
 export default function LogoutButton() {
   const navigate = useNavigate();

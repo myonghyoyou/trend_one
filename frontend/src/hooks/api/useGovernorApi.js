@@ -1,4 +1,4 @@
-import { apiPost, apiPostForm } from "../lib/apiClient.js";
+import { apiPost, apiPostForm } from "../../utils/apiClient.js";
 
 /**
  * @param {{ startDate: string, endDate: string, srchCity?: string, inspctDay?: string, srchCntnt?: string }} params

@@ -9,9 +9,9 @@ import LogoutButton from "../components/auth/LogoutButton.jsx";
 import Select from "../components/ui/Select.jsx";
 import Button from "../components/ui/Button.jsx";
 import Loader from "../components/ui/Loader.jsx";
-import { useModal } from "../context/ModalContext.jsx";
-import { searchGovernors, fetchGovernorStats } from "../hooks/useGovernorApi.js";
-import { ApiError } from "../lib/apiClient.js";
+import { useModal } from "../contexts/ModalContext.jsx";
+import { searchGovernors, fetchGovernorStats } from "../hooks/api/useGovernorApi.js";
+import { ApiError } from "../utils/apiClient.js";
 import { INTERVAL_OPTIONS } from "../constants/domain.js";
 
 const DEFAULT_INTERVAL = "1";

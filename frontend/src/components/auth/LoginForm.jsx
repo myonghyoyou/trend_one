@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
-import { apiPost, ApiError } from "../../lib/apiClient.js";
+import { apiPost, ApiError } from "../../utils/apiClient.js";
 import Button from "../ui/Button.jsx";
 
 const loginSchema = z.object({
