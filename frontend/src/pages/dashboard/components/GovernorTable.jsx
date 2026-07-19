@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { INSPECTION_DAY_OPTIONS, MAX_SELECTED_GOVERNORS } from "../../constants/domain.js";
+import { INSPECTION_DAY_OPTIONS, MAX_SELECTED_GOVERNORS } from "../../../constants/domain.js";
 
 const DAY_LABEL_BY_CODE = Object.fromEntries(INSPECTION_DAY_OPTIONS.map((o) => [o.value, o.label]));
 

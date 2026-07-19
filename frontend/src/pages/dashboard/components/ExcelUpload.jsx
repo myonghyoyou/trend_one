@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
 import PropTypes from "prop-types";
-import Button from "../ui/Button.jsx";
-import Loader from "../ui/Loader.jsx";
-import { useModal } from "../../contexts/ModalContext.jsx";
-import { uploadGovernorExcel } from "../../hooks/api/useGovernorApi.js";
-import { ApiError } from "../../utils/apiClient.js";
+import Button from "../../../components/ui/Button.jsx";
+import Loader from "../../../components/ui/Loader.jsx";
+import { useModal } from "../../../contexts/ModalContext.jsx";
+import { uploadGovernorExcel } from "../../../hooks/api/useGovernorApi.js";
+import { ApiError } from "../../../utils/apiClient.js";
 
 export default function ExcelUpload({ onUploaded }) {
   const fileInputRef = useRef(null);

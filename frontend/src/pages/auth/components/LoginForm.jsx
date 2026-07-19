@@ -3,8 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
-import { apiPost, ApiError } from "../../utils/apiClient.js";
-import Button from "../ui/Button.jsx";
+import { apiPost, ApiError } from "../../../utils/apiClient.js";
+import Button from "../../../components/ui/Button.jsx";
 
 const loginSchema = z.object({
   loginId: z.string().min(1, "아이디를 입력하세요."),
