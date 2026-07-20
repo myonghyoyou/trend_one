@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendone.govtrend.dao.GovernorDao">
+
+    <select id="findGovernorList"
+            parameterType="com.trendone.govtrend.dto.governor.GovernorSearchRequest"
+            resultType="com.trendone.govtrend.dto.governor.GovernorListItem">
+        SELECT
+            g.gvrnr_uid,
+            g.gvrnr_nm,
+            g.inspct_day,
+            COUNT(s.gvrnr_uid)::int AS gvrnr_stat_cnt,
+            r.cd_name
+        FROM t_governor g
+        INNER JOIN t_governor_stat s
+            ON s.gvrnr_uid = g.gvrnr_uid
+        INNER JOIN t_region_cd r
+            ON r.cate_cd = g.cate_cd
+        WHERE s.record_dttm &gt;= CAST(#{startDate} AS DATE)
+          AND s.record_dttm &lt; CAST(#{endDate} AS DATE) + INTERVAL '1 day'
+        <if test="srchCity != null and srchCity != ''">
+            AND g.cate_cd = #{srchCity}
+        </if>
+        <if test="inspctDay != null and inspctDay != ''">
+            AND g.inspct_day = #{inspctDay}
+        </if>
+        <if test="srchCntnt != null and srchCntnt != ''">
+            AND g.gvrnr_nm LIKE CONCAT('%', #{srchCntnt}, '%')
+        </if>
+        GROUP BY
+            g.gvrnr_uid,
+            g.gvrnr_nm,
+            g.inspct_day,
+            r.cd_name
+        ORDER BY g.gvrnr_nm ASC
+    </select>
+</mapper>

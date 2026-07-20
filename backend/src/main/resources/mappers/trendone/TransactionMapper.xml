@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendone.govtrend.dao.TransactionDao">
+
+    <insert id="insertTransaction"
+            parameterType="com.trendone.govtrend.dto.transaction.TransactionRecord">
+        INSERT INTO gvrnr_mng_sys_app_transaction (
+            transaction_id,
+            status,
+            data,
+            created_at,
+            updated_at
+        ) VALUES (
+            CAST(#{transactionId} AS UUID),
+            #{status},
+            CAST(#{data} AS JSONB),
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <update id="updateTransaction">
+        UPDATE gvrnr_mng_sys_app_transaction
+        SET status = #{status},
+            data = CAST(#{data} AS JSONB),
+            updated_at = CURRENT_TIMESTAMP
+        WHERE transaction_id = CAST(#{transactionId} AS UUID)
+    </update>
+
+    <select id="findActiveTransactions"
+            resultType="com.trendone.govtrend.dto.transaction.TransactionRecord">
+        SELECT
+            transaction_id::text AS transaction_id,
+            status,
+            data::text AS data,
+            created_at::text AS created_at,
+            updated_at::text AS updated_at
+        FROM gvrnr_mng_sys_app_transaction
+        WHERE status IN ('pending', 'in_progress')
+        ORDER BY created_at ASC
+    </select>
+
+    <select id="findActiveTransactionsForUpdate"
+            resultType="com.trendone.govtrend.dto.transaction.TransactionRecord">
+        SELECT
+            transaction_id::text AS transaction_id,
+            status,
+            data::text AS data,
+            created_at::text AS created_at,
+            updated_at::text AS updated_at
+        FROM gvrnr_mng_sys_app_transaction
+        WHERE status IN ('pending', 'in_progress')
+        ORDER BY created_at ASC
+        FOR UPDATE
+    </select>
+
+    <select id="findTransactionForUpdate"
+            resultType="com.trendone.govtrend.dto.transaction.TransactionRecord">
+        SELECT
+            transaction_id::text AS transaction_id,
+            status,
+            data::text AS data,
+            created_at::text AS created_at,
+            updated_at::text AS updated_at
+        FROM gvrnr_mng_sys_app_transaction
+        WHERE transaction_id = CAST(#{transactionId} AS UUID)
+        FOR UPDATE
+    </select>
+
+    <select id="existsNewerCompletedTransaction" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM gvrnr_mng_sys_app_transaction newer
+            INNER JOIN gvrnr_mng_sys_app_transaction target
+                ON target.transaction_id = CAST(#{transactionId} AS UUID)
+            WHERE newer.status = 'completed'
+              AND newer.transaction_id &lt;&gt; target.transaction_id
+              AND newer.created_at &gt;= target.created_at
+              AND newer.data @&gt; jsonb_build_object(
+                  'items', jsonb_build_array(
+                      jsonb_build_object('gvrnr_uid', #{gvrnrUid})
+                  )
+              )
+        )
+    </select>
+
+    <delete id="deleteGovernorStatsByChanges">
+        DELETE FROM t_governor_stat
+        WHERE
+        <foreach collection="items" item="item" separator=" OR ">
+            (
+                gvrnr_uid = #{item.gvrnrUid}
+                AND record_dttm IN
+                <foreach collection="item.recordDttms" item="recordDttm"
+                         open="(" separator="," close=")">
+                    CAST(#{recordDttm} AS TIMESTAMP)
+                </foreach>
+            )
+        </foreach>
+    </delete>
+
+    <update id="markRolledBack">
+        UPDATE gvrnr_mng_sys_app_transaction
+        SET status = 'rolled_back',
+            updated_at = CURRENT_TIMESTAMP
+        WHERE transaction_id IN
+        <foreach collection="transactionIds" item="transactionId" open="(" separator="," close=")">
+            CAST(#{transactionId} AS UUID)
+        </foreach>
+    </update>
+</mapper>

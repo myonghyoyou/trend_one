@@ -27,8 +27,9 @@ export const MAX_SELECTED_GOVERNORS = 3;
 
 export const MAX_SEARCH_DATE_RANGE_DAYS = 30;
 
-export const RES_CD = {
-  SUCCESS: "0000",
-  FAIL: "0001",
-  SESSION_EXPIRED: "0002",
+export const RESULT_CODE = {
+  SUCCESS: 200,
+  FAIL: -1,
+  SESSION_EXPIRED: 980,
+  ACCESS_DENIED: 990,
 };

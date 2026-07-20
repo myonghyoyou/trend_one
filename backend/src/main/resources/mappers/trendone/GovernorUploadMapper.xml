@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendone.govtrend.dao.GovernorUploadDao">
+
+    <select id="findGovernor"
+            resultType="com.trendone.govtrend.dto.upload.GovernorMaster">
+        SELECT
+            gvrnr_uid,
+            gvrnr_nm,
+            cate_cd,
+            inspct_day
+        FROM t_governor
+        WHERE gvrnr_nm = #{gvrnrNm}
+          AND cate_cd = #{cateCd}
+        LIMIT 1
+        FOR UPDATE
+    </select>
+
+    <select id="findGovernorForUpdate"
+            resultType="com.trendone.govtrend.dto.upload.GovernorMaster">
+        SELECT
+            gvrnr_uid,
+            gvrnr_nm,
+            cate_cd,
+            inspct_day
+        FROM t_governor
+        WHERE gvrnr_uid = #{gvrnrUid}
+        FOR UPDATE
+    </select>
+
+    <insert id="insertGovernor"
+            parameterType="com.trendone.govtrend.dto.upload.GovernorMaster">
+        INSERT INTO t_governor (
+            gvrnr_uid,
+            gvrnr_nm,
+            cate_cd,
+            rgst_dttm,
+            rgst_uid,
+            updt_dttm,
+            updt_uid,
+            inspct_day
+        ) VALUES (
+            #{gvrnrUid},
+            #{gvrnrNm},
+            #{cateCd},
+            CURRENT_TIMESTAMP,
+            #{rgstUid},
+            CURRENT_TIMESTAMP,
+            #{updtUid},
+            #{inspctDay}
+        )
+    </insert>
+
+    <delete id="deleteGovernorStats">
+        DELETE FROM t_governor_stat
+        WHERE gvrnr_uid = #{gvrnrUid}
+          AND record_dttm &gt;= #{startDttm}
+          AND record_dttm &lt;= #{endDttm}
+    </delete>
+
+    <insert id="insertGovernorStat"
+            parameterType="com.trendone.govtrend.dto.upload.GovernorStatInsert">
+        INSERT INTO t_governor_stat (
+            gvrnr_uid,
+            record_dttm,
+            gvrnr_press1,
+            gvrnr_press2,
+            gvrnr_trnsps1,
+            gvrnr_trnsps2,
+            rgst_dttm,
+            rgst_uid,
+            updt_dttm,
+            updt_uid
+        ) VALUES (
+            #{gvrnrUid},
+            #{recordDttm},
+            NULL,
+            #{gvrnrPress2,jdbcType=DECIMAL},
+            NULL,
+            NULL,
+            CURRENT_TIMESTAMP,
+            #{mbrUid},
+            CURRENT_TIMESTAMP,
+            #{mbrUid}
+        )
+    </insert>
+
+    <delete id="deleteGovernorIfNoStats">
+        DELETE FROM t_governor g
+        WHERE g.gvrnr_uid = #{gvrnrUid}
+          AND NOT EXISTS (
+              SELECT 1
+              FROM t_governor_stat s
+              WHERE s.gvrnr_uid = g.gvrnr_uid
+          )
+    </delete>
+</mapper>

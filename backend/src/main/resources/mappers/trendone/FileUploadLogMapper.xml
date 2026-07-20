@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendone.govtrend.dao.FileUploadLogDao">
+
+    <insert id="insertUploadLog"
+            parameterType="com.trendone.govtrend.dto.upload.FileUploadLog">
+        INSERT INTO t_file_upload_log (
+            mbr_uid,
+            success_yn,
+            file_name,
+            rgst_dttm,
+            rgst_uid,
+            updt_dttm,
+            updt_uid
+        ) VALUES (
+            #{mbrUid},
+            #{successYn},
+            #{fileName},
+            CURRENT_TIMESTAMP,
+            #{mbrUid},
+            CURRENT_TIMESTAMP,
+            #{mbrUid}
+        )
+    </insert>
+</mapper>
