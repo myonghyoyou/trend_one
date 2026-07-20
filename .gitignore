@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Java / Gradle backend local files
+/backend/.gradle/
+/backend/build/
+/backend/.idea/
+/backend/out/
+/backend/*.iml
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Local database backups
+trend_one_dev_backup*.sql
