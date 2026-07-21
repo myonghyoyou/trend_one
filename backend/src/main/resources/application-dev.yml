@@ -4,3 +4,7 @@ app:
       enabled: ${DEV_LOGIN_ENABLED:true}
       id: ${DEV_LOGIN_ID:admin}
       password: ${DEV_LOGIN_PASSWORD:123}
+
+logging:
+  level:
+    com.trendone.govtrend.logging.SqlLoggingInterceptor: DEBUG
