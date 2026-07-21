@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.trendone.govtrend.dao.GovernorUploadStageDao">
+
+    <delete id="deleteStage">
+        DELETE FROM t_governor_stat_upload_stage
+        WHERE transaction_id = CAST(#{transactionId} AS UUID)
+    </delete>
+
+    <delete id="deleteExistingGovernorStats">
+        DELETE FROM t_governor_stat target
+        USING (
+            SELECT
+                gvrnr_uid,
+                MIN(record_dttm) AS start_dttm,
+                MAX(record_dttm) AS end_dttm
+            FROM t_governor_stat_upload_stage
+            WHERE transaction_id = CAST(#{transactionId} AS UUID)
+            GROUP BY gvrnr_uid
+        ) stage_scope
+        WHERE target.gvrnr_uid = stage_scope.gvrnr_uid
+          AND target.record_dttm &gt;= stage_scope.start_dttm
+          AND target.record_dttm &lt;= stage_scope.end_dttm
+    </delete>
+
+    <insert id="insertGovernorStats">
+        INSERT INTO t_governor_stat (
+            gvrnr_uid,
+            record_dttm,
+            gvrnr_press1,
+            gvrnr_press2,
+            gvrnr_trnsps1,
+            gvrnr_trnsps2,
+            rgst_dttm,
+            rgst_uid,
+            updt_dttm,
+            updt_uid
+        )
+        SELECT
+            stage.gvrnr_uid,
+            stage.record_dttm,
+            NULL,
+            stage.gvrnr_press2,
+            NULL,
+            NULL,
+            CURRENT_TIMESTAMP,
+            #{mbrUid},
+            CURRENT_TIMESTAMP,
+            #{mbrUid}
+        FROM t_governor_stat_upload_stage stage
+        WHERE stage.transaction_id = CAST(#{transactionId} AS UUID)
+    </insert>
+</mapper>

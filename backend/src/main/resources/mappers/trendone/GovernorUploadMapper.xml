@@ -53,6 +53,13 @@
         )
     </insert>
 
+    <update id="updateGovernorInspectionDay">
+        UPDATE t_governor
+        SET inspct_day = #{inspctDay},
+            updt_dttm = CURRENT_TIMESTAMP
+        WHERE gvrnr_uid = #{gvrnrUid}
+    </update>
+
     <delete id="deleteGovernorStats">
         DELETE FROM t_governor_stat
         WHERE gvrnr_uid = #{gvrnrUid}

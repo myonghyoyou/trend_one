@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -53,7 +54,7 @@ class TransactionServiceImplTest {
                 new TransactionChange("new-governor", true,
                         Arrays.asList("2022-07-04T00:00", "2022-07-04T00:10")),
                 new TransactionChange("existing-governor", false,
-                        Collections.singletonList("2022-07-04T00:00"))));
+                        Collections.singletonList("2022-07-04T00:00"), "TUE")));
         when(transactionDao.findTransactionForUpdate(transactionId)).thenReturn(transaction);
         when(transactionDao.existsNewerCompletedTransaction(eq(transactionId), eq("new-governor")))
                 .thenReturn(false);
@@ -67,9 +68,30 @@ class TransactionServiceImplTest {
         RollbackResponse response = transactionService.rollbackTransaction(request(transactionId));
 
         assertEquals("트랜잭션 rollback이 완료되었습니다.", response.getMessage());
-        verify(transactionDao).deleteGovernorStatsByChanges(anyList());
+        verify(transactionDao, times(2)).deleteGovernorStatsByChanges(anyList());
         verify(governorUploadDao).deleteGovernorIfNoStats("new-governor");
+        verify(governorUploadDao).updateGovernorInspectionDay("existing-governor", "TUE");
         verify(transactionDao).markRolledBack(Collections.singletonList(transactionId));
+    }
+
+    @Test
+    void splitsLargeRollbackDeleteIntoDatabaseSafeBatches() throws Exception {
+        String transactionId = UUID.randomUUID().toString();
+        java.util.List<String> recordDttms = new java.util.ArrayList<>();
+        for (int index = 0; index < 5001; index++) {
+            recordDttms.add("2022-07-04T00:00");
+        }
+        TransactionRecord transaction = transaction("completed", transactionData(
+                new TransactionChange("governor-1", true, recordDttms)));
+        when(transactionDao.findTransactionForUpdate(transactionId)).thenReturn(transaction);
+        when(governorUploadDao.findGovernorForUpdate("governor-1"))
+                .thenReturn(new GovernorMaster());
+        when(transactionDao.existsNewerCompletedTransaction(eq(transactionId), eq("governor-1")))
+                .thenReturn(false);
+
+        transactionService.rollbackTransaction(request(transactionId));
+
+        verify(transactionDao, times(2)).deleteGovernorStatsByChanges(anyList());
     }
 
     @Test

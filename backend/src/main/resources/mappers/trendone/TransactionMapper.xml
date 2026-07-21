@@ -69,6 +69,21 @@
         FOR UPDATE
     </select>
 
+    <select id="findTransactionStatus"
+            resultType="com.trendone.govtrend.dto.transaction.TransactionStatusResponse">
+        SELECT
+            transaction.transaction_id::text AS transaction_id,
+            transaction.status,
+            COALESCE(progress.progress_percent, 0) AS progress_percent,
+            progress.progress_message,
+            transaction.created_at::text AS created_at,
+            transaction.updated_at::text AS updated_at
+        FROM gvrnr_mng_sys_app_transaction transaction
+        LEFT JOIN gvrnr_mng_sys_app_transaction_progress progress
+            ON progress.transaction_id = transaction.transaction_id
+        WHERE transaction.transaction_id = CAST(#{transactionId} AS UUID)
+    </select>
+
     <select id="existsNewerCompletedTransaction" resultType="boolean">
         SELECT EXISTS (
             SELECT 1

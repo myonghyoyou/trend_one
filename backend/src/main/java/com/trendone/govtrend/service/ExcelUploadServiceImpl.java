@@ -57,19 +57,29 @@ public class ExcelUploadServiceImpl implements ExcelUploadService {
         days.put("금요일", "FRI");
         days.put("토요일", "SAT");
         days.put("일요일", "SUN");
+        days.put("DATA(월)", "MON");
+        days.put("DATA(화)", "TUE");
+        days.put("DATA(수)", "WED");
+        days.put("DATA(목)", "THU");
+        days.put("DATA(금)", "FRI");
+        days.put("DATA(토)", "SAT");
+        days.put("DATA(일)", "SUN");
         INSPECTION_DAY_BY_SHEET = Collections.unmodifiableMap(days);
     }
 
     private final TransactionService transactionService;
-    private final UploadTransactionService uploadTransactionService;
+    private final ExcelUploadAsyncService excelUploadAsyncService;
+    private final TransactionProgressService transactionProgressService;
     private final FileUploadLogDao fileUploadLogDao;
 
     public ExcelUploadServiceImpl(
             TransactionService transactionService,
-            UploadTransactionService uploadTransactionService,
+            ExcelUploadAsyncService excelUploadAsyncService,
+            TransactionProgressService transactionProgressService,
             FileUploadLogDao fileUploadLogDao) {
         this.transactionService = transactionService;
-        this.uploadTransactionService = uploadTransactionService;
+        this.excelUploadAsyncService = excelUploadAsyncService;
+        this.transactionProgressService = transactionProgressService;
         this.fileUploadLogDao = fileUploadLogDao;
     }
 
@@ -78,11 +88,14 @@ public class ExcelUploadServiceImpl implements ExcelUploadService {
         validateFile(file, mbrUid);
         String fileName = file.getOriginalFilename();
         TransactionCreateResponse transaction = transactionService.createPending();
+        transactionProgressService.initialize(transaction.getTransactionId(), "업로드 대기 중입니다.");
 
         try {
             GovernorUploadData uploadData = parse(file);
-            return uploadTransactionService.processUpload(
-                    transaction.getTransactionId(), uploadData, mbrUid, fileName);
+            transactionProgressService.update(
+                    transaction.getTransactionId(), 5, "파일 검증이 완료되었습니다.");
+            excelUploadAsyncService.process(transaction.getTransactionId(), uploadData, mbrUid, fileName);
+            return new UploadResponse(transaction.getTransactionId(), "pending");
         } catch (BizException exception) {
             markFailure(transaction.getTransactionId(), mbrUid, fileName, exception.getMessage());
             throw exception;
@@ -98,10 +111,12 @@ public class ExcelUploadServiceImpl implements ExcelUploadService {
                 Workbook workbook = WorkbookFactory.create(inputStream)) {
             List<GovernorUploadSheet> sheets = new ArrayList<>();
             for (Sheet sheet : workbook) {
-                sheets.add(parseSheet(sheet));
+                if (isDataSheet(sheet.getSheetName())) {
+                    sheets.add(parseSheet(sheet));
+                }
             }
             if (sheets.isEmpty()) {
-                throw invalid("엑셀 파일에 시트가 없습니다.");
+                throw invalid("엑셀 파일에 DATA 시트가 없습니다.");
             }
             return new GovernorUploadData(sheets);
         } catch (BizException exception) {
@@ -113,29 +128,37 @@ public class ExcelUploadServiceImpl implements ExcelUploadService {
 
     private GovernorUploadSheet parseSheet(Sheet sheet) {
         Row headerRow = sheet.getRow(HEADER_ROW_INDEX);
-        if (headerRow == null || headerRow.getLastCellNum() <= 1) {
+        if (headerRow == null) {
             throw invalid("엑셀 헤더 형식이 올바르지 않습니다.");
         }
 
         DataFormatter formatter = new DataFormatter();
         List<GovernorUploadColumn> columns = new ArrayList<>();
-        for (int columnIndex = 1; columnIndex < headerRow.getLastCellNum(); columnIndex++) {
+        short lastCellNum = headerRow.getLastCellNum();
+        for (int columnIndex = 1; columnIndex < lastCellNum; columnIndex++) {
             Cell headerCell = headerRow.getCell(columnIndex);
-            columns.add(parseHeader(formatter.formatCellValue(headerCell), sheet.getSheetName(), columnIndex));
+            String header = formatter.formatCellValue(headerCell).trim();
+            if (!header.isEmpty()) {
+                columns.add(parseHeader(header, sheet.getSheetName(), columnIndex));
+            }
+        }
+        if (columns.isEmpty()) {
+            throw invalid(String.format("%s 시트에 정압기 헤더가 없습니다.", sheet.getSheetName()));
         }
 
         List<GovernorUploadRow> rows = new ArrayList<>();
         for (int rowIndex = DATA_START_ROW_INDEX; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
             Row row = sheet.getRow(rowIndex);
-            if (row == null || isEmptyRow(row, columns.size(), formatter)) {
+            if (row == null || isEmptyMeasurementRow(row, columns, formatter)) {
                 continue;
             }
 
             LocalDateTime recordDttm = parseDate(row.getCell(0), formatter, sheet.getSheetName(), rowIndex);
             List<BigDecimal> press2Values = new ArrayList<>();
-            for (int columnIndex = 0; columnIndex < columns.size(); columnIndex++) {
+            for (GovernorUploadColumn column : columns) {
                 press2Values.add(parseMeasurement(
-                        row.getCell(columnIndex + 1), formatter, sheet.getSheetName(), rowIndex, columnIndex + 1));
+                        row.getCell(column.getColumnIndex()), formatter, sheet.getSheetName(), rowIndex,
+                        column.getColumnIndex()));
             }
             rows.add(new GovernorUploadRow(recordDttm, press2Values));
         }
@@ -144,7 +167,10 @@ public class ExcelUploadServiceImpl implements ExcelUploadService {
             throw invalid("엑셀 시트에 측정 데이터가 없습니다.");
         }
         rows.sort(Comparator.comparing(GovernorUploadRow::getRecordDttm));
-        String inspctDay = INSPECTION_DAY_BY_SHEET.getOrDefault(sheet.getSheetName(), "MON");
+        String inspctDay = INSPECTION_DAY_BY_SHEET.get(sheet.getSheetName());
+        if (inspctDay == null) {
+            throw invalid(String.format("%s 시트의 점검요일을 확인할 수 없습니다.", sheet.getSheetName()));
+        }
         return new GovernorUploadSheet(inspctDay, columns, rows);
     }
 
@@ -162,25 +188,34 @@ public class ExcelUploadServiceImpl implements ExcelUploadService {
         if (isBlank(governorName) || governorName.length() > 20) {
             throw invalid(String.format("%s 시트 %d열의 정압기명이 올바르지 않습니다.", sheetName, columnIndex + 1));
         }
-        return new GovernorUploadColumn(governorName, region.contains("경기") ? "3100" : "1100");
+        return new GovernorUploadColumn(governorName, region.contains("경기") ? "3100" : "1100", columnIndex);
     }
 
-    private boolean isEmptyRow(Row row, int columnCount, DataFormatter formatter) {
-        for (int index = 0; index <= columnCount; index++) {
-            Cell cell = row.getCell(index);
-            if (cell != null && !formatter.formatCellValue(cell).trim().isEmpty()) {
+    private boolean isEmptyMeasurementRow(
+            Row row, List<GovernorUploadColumn> columns, DataFormatter formatter) {
+        for (GovernorUploadColumn column : columns) {
+            Cell cell = row.getCell(column.getColumnIndex());
+            String value = formatter.formatCellValue(cell).trim();
+            if (!value.isEmpty() && !value.contains("*")) {
                 return false;
             }
         }
         return true;
     }
 
+    private boolean isDataSheet(String sheetName) {
+        return sheetName != null && sheetName.startsWith("DATA(") && sheetName.endsWith(")");
+    }
+
     private LocalDateTime parseDate(Cell cell, DataFormatter formatter, String sheetName, int rowIndex) {
         if (cell == null || formatter.formatCellValue(cell).trim().isEmpty()) {
             throw invalid(String.format("%s 시트 %d행의 시간 데이터가 없습니다.", sheetName, rowIndex + 1));
         }
-        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
-            return cell.getLocalDateTimeCellValue();
+        if (cell.getCellType() == CellType.NUMERIC) {
+            double numericValue = cell.getNumericCellValue();
+            if (DateUtil.isValidExcelDate(numericValue)) {
+                return DateUtil.getLocalDateTime(numericValue);
+            }
         }
 
         String value = formatter.formatCellValue(cell).trim();

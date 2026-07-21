@@ -15,6 +15,10 @@ public interface GovernorUploadDao {
 
     void insertGovernor(GovernorMaster governorMaster);
 
+    void updateGovernorInspectionDay(
+            @Param("gvrnrUid") String gvrnrUid,
+            @Param("inspctDay") String inspctDay);
+
     int deleteGovernorStats(
             @Param("gvrnrUid") String gvrnrUid,
             @Param("startDttm") LocalDateTime startDttm,

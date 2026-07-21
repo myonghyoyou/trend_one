@@ -1,6 +1,5 @@
 package com.trendone.govtrend.service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -12,11 +11,11 @@ import com.trendone.govtrend.dao.GovernorUploadDao;
 import com.trendone.govtrend.dao.TransactionDao;
 import com.trendone.govtrend.dto.upload.FileUploadLog;
 import com.trendone.govtrend.dto.upload.GovernorMaster;
-import com.trendone.govtrend.dto.upload.GovernorStatInsert;
 import com.trendone.govtrend.dto.upload.GovernorUploadColumn;
 import com.trendone.govtrend.dto.upload.GovernorUploadData;
 import com.trendone.govtrend.dto.upload.GovernorUploadRow;
 import com.trendone.govtrend.dto.upload.GovernorUploadSheet;
+import com.trendone.govtrend.dto.upload.GovernorUploadStageRow;
 import com.trendone.govtrend.dto.upload.UploadResponse;
 import com.trendone.govtrend.dto.transaction.TransactionChange;
 import com.trendone.govtrend.dto.transaction.TransactionData;
@@ -30,16 +29,22 @@ public class UploadTransactionServiceImpl implements UploadTransactionService {
 
     private final TransactionDao transactionDao;
     private final GovernorUploadDao governorUploadDao;
+    private final GovernorUploadStageService governorUploadStageService;
+    private final TransactionProgressService transactionProgressService;
     private final FileUploadLogDao fileUploadLogDao;
     private final ObjectMapper objectMapper;
 
     public UploadTransactionServiceImpl(
             TransactionDao transactionDao,
             GovernorUploadDao governorUploadDao,
+            GovernorUploadStageService governorUploadStageService,
+            TransactionProgressService transactionProgressService,
             FileUploadLogDao fileUploadLogDao,
             ObjectMapper objectMapper) {
         this.transactionDao = transactionDao;
         this.governorUploadDao = governorUploadDao;
+        this.governorUploadStageService = governorUploadStageService;
+        this.transactionProgressService = transactionProgressService;
         this.fileUploadLogDao = fileUploadLogDao;
         this.objectMapper = objectMapper;
     }
@@ -49,26 +54,66 @@ public class UploadTransactionServiceImpl implements UploadTransactionService {
     public UploadResponse processUpload(
             String transactionId, GovernorUploadData uploadData, String mbrUid, String fileName) {
         List<TransactionChange> changes = new ArrayList<>();
+        List<ResolvedUploadColumn> resolvedColumns = new ArrayList<>();
+        int totalColumns = uploadData.getSheets().stream()
+                .mapToInt(sheet -> sheet.getColumns().size())
+                .sum();
+        int resolvedColumnCount = 0;
 
+        transactionProgressService.update(transactionId, 15, "정압기 정보를 확인하고 있습니다.");
         transactionDao.updateTransaction(transactionId, "in_progress", "{}");
         for (GovernorUploadSheet sheet : uploadData.getSheets()) {
             for (int columnIndex = 0; columnIndex < sheet.getColumns().size(); columnIndex++) {
                 GovernorUploadColumn column = sheet.getColumns().get(columnIndex);
                 GovernorMaster governor = governorUploadDao.findGovernor(column.getGvrnrNm(), column.getCateCd());
                 boolean createdGovernor = governor == null;
+                String previousInspctDay = null;
                 if (createdGovernor) {
                     governor = createGovernor(column, sheet.getInspctDay(), mbrUid);
                     governorUploadDao.insertGovernor(governor);
+                    previousInspctDay = "";
+                } else {
+                    previousInspctDay = governor.getInspctDay() == null ? "" : governor.getInspctDay();
+                    if (!sheet.getInspctDay().equals(governor.getInspctDay())) {
+                        governorUploadDao.updateGovernorInspectionDay(
+                        governor.getGvrnrUid(), sheet.getInspctDay());
+                    }
                 }
-                insertStatistics(governor.getGvrnrUid(), sheet.getRows(), columnIndex, mbrUid);
+                resolvedColumns.add(new ResolvedUploadColumn(sheet, columnIndex, governor));
                 changes.add(new TransactionChange(
                         governor.getGvrnrUid(),
                         createdGovernor,
                         sheet.getRows().stream()
                                 .map(row -> row.getRecordDttm().toString())
-                                .collect(java.util.stream.Collectors.toList())));
+                                .collect(java.util.stream.Collectors.toList()),
+                        previousInspctDay));
+                resolvedColumnCount++;
+                if (resolvedColumnCount == totalColumns || resolvedColumnCount % 20 == 0) {
+                    int progress = 15 + (resolvedColumnCount * 25 / Math.max(totalColumns, 1));
+                    transactionProgressService.update(transactionId, progress, "정압기 정보를 확인하고 있습니다.");
+                }
             }
         }
+
+        List<GovernorUploadStageRow> stageRows = new ArrayList<>();
+        for (ResolvedUploadColumn resolvedColumn : resolvedColumns) {
+            for (GovernorUploadRow row : resolvedColumn.sheet.getRows()) {
+                stageRows.add(new GovernorUploadStageRow(
+                        resolvedColumn.governor.getGvrnrUid(),
+                        row.getRecordDttm(),
+                        row.getGvrnrPress2Values().get(resolvedColumn.columnIndex)));
+            }
+        }
+
+        transactionProgressService.update(transactionId, 45, "측정 데이터를 임시 저장하고 있습니다.");
+        governorUploadStageService.deleteStage(transactionId);
+        governorUploadStageService.copyRows(transactionId, stageRows);
+        transactionProgressService.update(transactionId, 65, "기존 측정 데이터를 정리하고 있습니다.");
+        governorUploadStageService.deleteExistingGovernorStats(transactionId);
+        transactionProgressService.update(transactionId, 80, "측정 데이터를 저장하고 있습니다.");
+        governorUploadStageService.insertGovernorStats(transactionId, mbrUid);
+        governorUploadStageService.deleteStage(transactionId);
+        transactionProgressService.update(transactionId, 95, "업로드 결과를 정리하고 있습니다.");
 
         String data = toJson(new TransactionData(1, fileName, changes));
         fileUploadLogDao.insertUploadLog(new FileUploadLog(mbrUid, "Y", fileName));
@@ -76,14 +121,17 @@ public class UploadTransactionServiceImpl implements UploadTransactionService {
         return new UploadResponse(transactionId, "completed");
     }
 
-    private void insertStatistics(
-            String gvrnrUid, List<GovernorUploadRow> rows, int columnIndex, String mbrUid) {
-        LocalDateTime startDttm = rows.get(0).getRecordDttm();
-        LocalDateTime endDttm = rows.get(rows.size() - 1).getRecordDttm();
-        governorUploadDao.deleteGovernorStats(gvrnrUid, startDttm, endDttm);
-        for (GovernorUploadRow row : rows) {
-            governorUploadDao.insertGovernorStat(new GovernorStatInsert(
-                    gvrnrUid, row.getRecordDttm(), row.getGvrnrPress2Values().get(columnIndex), mbrUid));
+    private static class ResolvedUploadColumn {
+
+        private final GovernorUploadSheet sheet;
+        private final int columnIndex;
+        private final GovernorMaster governor;
+
+        private ResolvedUploadColumn(
+                GovernorUploadSheet sheet, int columnIndex, GovernorMaster governor) {
+            this.sheet = sheet;
+            this.columnIndex = columnIndex;
+            this.governor = governor;
         }
     }
 

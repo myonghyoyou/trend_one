@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.trendone.govtrend.dto.transaction.TransactionRecord;
 import com.trendone.govtrend.dto.transaction.TransactionChange;
+import com.trendone.govtrend.dto.transaction.TransactionStatusResponse;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -21,6 +22,8 @@ public interface TransactionDao {
     List<TransactionRecord> findActiveTransactionsForUpdate();
 
     TransactionRecord findTransactionForUpdate(@Param("transactionId") String transactionId);
+
+    TransactionStatusResponse findTransactionStatus(@Param("transactionId") String transactionId);
 
     boolean existsNewerCompletedTransaction(
             @Param("transactionId") String transactionId,

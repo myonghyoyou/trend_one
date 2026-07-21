@@ -14,6 +14,7 @@ import com.trendone.govtrend.dto.transaction.TransactionData;
 import com.trendone.govtrend.dto.transaction.TransactionCreateResponse;
 import com.trendone.govtrend.dto.transaction.TransactionListResponse;
 import com.trendone.govtrend.dto.transaction.TransactionRecord;
+import com.trendone.govtrend.dto.transaction.TransactionStatusResponse;
 import com.trendone.govtrend.exception.BizException;
 
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
+
+    private static final int ROLLBACK_RECORD_BATCH_SIZE = 5000;
 
     private final TransactionDao transactionDao;
     private final GovernorUploadDao governorUploadDao;
@@ -62,9 +65,34 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void markInProgress(String transactionId) {
+        transactionDao.updateTransaction(transactionId, "in_progress", "{}");
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public TransactionListResponse findActiveTransactions() {
         return new TransactionListResponse(transactionDao.findActiveTransactions());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TransactionStatusResponse findTransactionStatus(String transactionId) {
+        if (isBlank(transactionId)) {
+            throw invalid("트랜잭션 ID를 입력하세요.");
+        }
+        try {
+            UUID.fromString(transactionId);
+        } catch (IllegalArgumentException exception) {
+            throw invalid("트랜잭션 ID 형식이 올바르지 않습니다.");
+        }
+
+        TransactionStatusResponse status = transactionDao.findTransactionStatus(transactionId);
+        if (status == null) {
+            throw invalid("트랜잭션을 찾을 수 없습니다.");
+        }
+        return status;
     }
 
     @Override
@@ -115,14 +143,33 @@ public class TransactionServiceImpl implements TransactionService {
             }
         }
 
-        transactionDao.deleteGovernorStatsByChanges(changes);
+        deleteGovernorStatsInBatches(changes);
         for (TransactionChange change : changes) {
             if (change.isCreatedGovernor()) {
                 governorUploadDao.deleteGovernorIfNoStats(change.getGvrnrUid());
+            } else if (change.getPreviousInspctDay() != null) {
+                governorUploadDao.updateGovernorInspectionDay(
+                        change.getGvrnrUid(),
+                        change.getPreviousInspctDay().isEmpty() ? null : change.getPreviousInspctDay());
             }
         }
         transactionDao.markRolledBack(Collections.singletonList(transactionId));
         return new RollbackResponse("트랜잭션 rollback이 완료되었습니다.");
+    }
+
+    private void deleteGovernorStatsInBatches(List<TransactionChange> changes) {
+        for (TransactionChange change : changes) {
+            List<String> recordDttms = change.getRecordDttms();
+            for (int start = 0; start < recordDttms.size(); start += ROLLBACK_RECORD_BATCH_SIZE) {
+                int end = Math.min(start + ROLLBACK_RECORD_BATCH_SIZE, recordDttms.size());
+                TransactionChange batch = new TransactionChange(
+                        change.getGvrnrUid(),
+                        change.isCreatedGovernor(),
+                        recordDttms.subList(start, end),
+                        change.getPreviousInspctDay());
+                transactionDao.deleteGovernorStatsByChanges(Collections.singletonList(batch));
+            }
+        }
     }
 
     private TransactionData parseTransactionData(String data) {

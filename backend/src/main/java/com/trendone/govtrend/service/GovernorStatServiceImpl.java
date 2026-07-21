@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 public class GovernorStatServiceImpl implements GovernorStatService {
 
     private static final Set<Integer> INTERVAL_OPTIONS = new HashSet<>(Arrays.asList(1, 20, 30, 40));
-    private static final String SPECIAL_CHAR_PATTERN = "[~!@#$%^&*()_+|<>?:{}]";
+    private static final String GOVERNOR_UID_PATTERN = "^[A-Za-z0-9_-]+$";
 
     private final GovernorStatDao governorStatDao;
 
@@ -111,7 +111,7 @@ public class GovernorStatServiceImpl implements GovernorStatService {
                 .distinct()
                 .collect(Collectors.toList());
         if (uidList.isEmpty() || uidList.size() > 3
-                || uidList.stream().anyMatch(uid -> uid.length() > 40 || uid.matches(".*" + SPECIAL_CHAR_PATTERN + ".*"))) {
+                || uidList.stream().anyMatch(uid -> uid.length() > 40 || !uid.matches(GOVERNOR_UID_PATTERN))) {
             throw invalid("정압기 선택 값이 올바르지 않습니다.");
         }
         return uidList;

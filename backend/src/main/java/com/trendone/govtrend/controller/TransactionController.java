@@ -4,6 +4,7 @@ import com.trendone.govtrend.common.ResponseDto;
 import com.trendone.govtrend.dto.transaction.RollbackResponse;
 import com.trendone.govtrend.dto.transaction.TransactionCreateResponse;
 import com.trendone.govtrend.dto.transaction.TransactionListResponse;
+import com.trendone.govtrend.dto.transaction.TransactionStatusResponse;
 import com.trendone.govtrend.dto.transaction.RollbackRequest;
 import com.trendone.govtrend.service.TransactionService;
 
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,6 +34,12 @@ public class TransactionController {
     @GetMapping("/in-progress")
     public ResponseEntity<ResponseDto<TransactionListResponse>> findActive() {
         return ResponseEntity.ok(ResponseDto.ok(transactionService.findActiveTransactions()));
+    }
+
+    @GetMapping("/{transactionId}")
+    public ResponseEntity<ResponseDto<TransactionStatusResponse>> findStatus(
+            @PathVariable String transactionId) {
+        return ResponseEntity.ok(ResponseDto.ok(transactionService.findTransactionStatus(transactionId)));
     }
 
     @PostMapping("/rollback")
