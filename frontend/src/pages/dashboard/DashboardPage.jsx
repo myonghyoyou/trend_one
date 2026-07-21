@@ -8,10 +8,12 @@ import ExcelUpload from "@/pages/dashboard/components/ExcelUpload.jsx";
 import LogoutButton from "@/pages/dashboard/components/LogoutButton.jsx";
 import Select from "@/components/ui/Select.jsx";
 import Button from "@/components/ui/Button.jsx";
+import Checkbox from "@/components/ui/Checkbox.jsx";
 import Loader from "@/components/ui/Loader.jsx";
 import { useModal } from "@/contexts/ModalContext.jsx";
 import { searchGovernors, fetchGovernorStats } from "@/api/governors.js";
 import { resolveErrorMessage } from "@/api/client.js";
+import { getPreviousPeriod, mergeWeeklyComparison } from "@/utils/weekCompare.js";
 import { INTERVAL_OPTIONS } from "@/constants/domain.js";
 
 const DEFAULT_INTERVAL = "1";
@@ -26,6 +28,7 @@ export default function DashboardPage() {
   const [intervalNum, setIntervalNum] = useState(DEFAULT_INTERVAL);
   const [searching, setSearching] = useState(false);
   const [loadingStats, setLoadingStats] = useState(false);
+  const [compareMode, setCompareMode] = useState(false);
 
   const handleSearch = async (values) => {
     setSearching(true);
@@ -51,18 +54,37 @@ export default function DashboardPage() {
     });
   };
 
-  const fetchStats = async (interval) => {
+  const fetchStats = async (interval, compare) => {
     if (selectedGovernors.length === 0 || !lastSearchParams) return;
     setLoadingStats(true);
     try {
-      const res = await fetchGovernorStats({
+      const baseParams = {
         gvrnrUids: selectedGovernors.map((g) => g.gvrnr_uid).join(","),
         gvrnrNms: selectedGovernors.map((g) => g.gvrnr_nm).join(","),
         startDate: lastSearchParams.startDate,
         endDate: lastSearchParams.endDate,
         intervalNum: interval,
+      };
+
+      if (!compare) {
+        const res = await fetchGovernorStats(baseParams);
+        setStatsData(res);
+        return;
+      }
+
+      const previousPeriod = getPreviousPeriod(lastSearchParams.startDate, lastSearchParams.endDate);
+      const [thisWeekRes, lastWeekRes] = await Promise.all([
+        fetchGovernorStats(baseParams),
+        fetchGovernorStats({
+          ...baseParams,
+          startDate: previousPeriod.startDate,
+          endDate: previousPeriod.endDate,
+        }),
+      ]);
+      setStatsData({
+        xAxisList: thisWeekRes.xAxisList,
+        statDataObj: mergeWeeklyComparison(thisWeekRes, lastWeekRes, previousPeriod.shiftDays),
       });
-      setStatsData(res);
     } catch (error) {
       openAlert(resolveErrorMessage(error, "조회 중 오류가 발생했습니다."), "FAIL");
     } finally {
@@ -75,13 +97,19 @@ export default function DashboardPage() {
       openAlert("정압기를 선택하세요.", "FAIL");
       return;
     }
-    fetchStats(intervalNum);
+    fetchStats(intervalNum, compareMode);
   };
 
   const handleIntervalChange = (event) => {
     const value = event.target.value;
     setIntervalNum(value);
-    if (statsData) fetchStats(value);
+    if (statsData) fetchStats(value, compareMode);
+  };
+
+  const handleCompareToggle = (event) => {
+    const checked = event.target.checked;
+    setCompareMode(checked);
+    if (statsData) fetchStats(intervalNum, checked);
   };
 
   return (
@@ -112,6 +140,10 @@ export default function DashboardPage() {
             value={intervalNum}
             onChange={handleIntervalChange}
           />
+          <label htmlFor="compareMode" className="flex items-center gap-1.5 text-sm text-slate-600">
+            <Checkbox id="compareMode" checked={compareMode} onChange={handleCompareToggle} />
+            지난주와 비교
+          </label>
         </div>
 
         <StatsChart statDataObj={statsData?.statDataObj} />
