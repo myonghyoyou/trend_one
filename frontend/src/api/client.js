@@ -87,3 +87,48 @@ export function apiPost(path, body) {
 export function apiPostForm(path, formData) {
   return request(path, { method: "POST", body: formData });
 }
+
+/**
+ * multipart 업로드 진행률을 전달하는 XHR 래퍼.
+ * fetch는 요청 본문 업로드 진행률을 제공하지 않으므로 업로드 화면에서만 XHR을 사용한다.
+ * @param {string} path
+ * @param {FormData} formData
+ * @param {(progress: number) => void} [onProgress]
+ */
+export function apiPostFormWithProgress(path, formData, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${BASE_URL}${path}`);
+    xhr.withCredentials = true;
+    xhr.setRequestHeader("Accept", "application/json");
+
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        onProgress?.(Math.round((event.loaded / event.total) * 100));
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      let json;
+      try {
+        json = JSON.parse(xhr.responseText);
+      } catch {
+        reject(new ApiError(xhr.status, "서버 응답을 해석할 수 없습니다."));
+        return;
+      }
+
+      if (json.resultCode === 980) {
+        sessionExpiredListener?.();
+      }
+      if (json.resultCode !== 200) {
+        reject(new ApiError(json.resultCode, json.resultMsg, json.data ?? json.errorList));
+        return;
+      }
+      resolve(json.data);
+    });
+
+    xhr.addEventListener("error", () => reject(new Error("업로드 요청에 실패했습니다.")));
+    xhr.addEventListener("abort", () => reject(new Error("업로드 요청이 취소되었습니다.")));
+    xhr.send(formData);
+  });
+}

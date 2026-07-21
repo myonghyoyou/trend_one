@@ -1,4 +1,4 @@
-import { apiPost, apiPostForm } from "@/api/client.js";
+import { apiGet, apiPost, apiPostFormWithProgress } from "@/api/client.js";
 
 /**
  * @param {{ startDate: string, endDate: string, srchCity?: string, inspctDay?: string, srchCntnt?: string }} params
@@ -25,6 +25,19 @@ export function fetchGovernorStats(params) {
 /**
  * @param {FormData} formData - `upload_files` 필드로 엑셀 파일 포함
  */
-export function uploadGovernorExcel(formData) {
-  return apiPostForm("/api/crud", formData);
+export function uploadGovernorExcel(formData, onProgress) {
+  return apiPostFormWithProgress("/api/crud", formData, onProgress);
+}
+
+/**
+ * @param {string} transactionId
+ * @returns {Promise<{
+ *   transaction_id: string,
+ *   status: string,
+ *   progress_percent: number,
+ *   progress_message?: string,
+ * }>}
+ */
+export function fetchUploadStatus(transactionId) {
+  return apiGet(`/api/transactions/${encodeURIComponent(transactionId)}`);
 }

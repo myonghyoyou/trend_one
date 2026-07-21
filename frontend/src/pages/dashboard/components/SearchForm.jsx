@@ -7,7 +7,7 @@ import Select from "@/components/ui/Select.jsx";
 import Field from "@/components/ui/Field.jsx";
 import TextInput from "@/components/ui/TextInput.jsx";
 import { REGION_OPTIONS, INSPECTION_DAY_OPTIONS, MAX_SEARCH_DATE_RANGE_DAYS } from "@/constants/domain.js";
-import { dateDiffDays, today, daysAgo } from "@/utils/dateUtil.js";
+import { dateDiffDays } from "@/utils/dateUtil.js";
 
 const SPECIAL_CHAR_PATTERN = /[~!@#$%^&*()_+|<>?:{}]/;
 
@@ -25,8 +25,8 @@ const searchSchema = z
   });
 
 const DEFAULT_VALUES = {
-  startDate: daysAgo(7),
-  endDate: today(),
+  startDate: "2026-07-06",
+  endDate: "2026-07-12",
   srchCity: "",
   inspctDay: "",
   srchCntnt: "",
@@ -42,18 +42,24 @@ export default function SearchForm({ onSearch, isSearching }) {
   return (
     <form
       onSubmit={handleSubmit(onSearch)}
-      className="grid grid-cols-2 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-3 lg:grid-cols-6"
+      className="grid grid-cols-2 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-3 lg:grid-cols-7"
     >
       <Field label="시작일" htmlFor="startDate" size="sm" className="col-span-1">
-        <TextInput id="startDate" type="date" size="sm" {...register("startDate")} />
+        <TextInput id="startDate" type="date" size="sm" className="h-9" {...register("startDate")} />
       </Field>
 
       <Field label="종료일" htmlFor="endDate" size="sm" className="col-span-1" error={errors.endDate?.message}>
-        <TextInput id="endDate" type="date" size="sm" {...register("endDate")} />
+        <TextInput id="endDate" type="date" size="sm" className="h-9" {...register("endDate")} />
       </Field>
 
       <Field label="지역" htmlFor="srchCity" size="sm" className="col-span-1">
-        <Select id="srchCity" options={REGION_OPTIONS} placeholder="전체" className="w-full" {...register("srchCity")} />
+        <Select
+          id="srchCity"
+          options={REGION_OPTIONS}
+          placeholder="전체"
+          className="h-9 w-full"
+          {...register("srchCity")}
+        />
       </Field>
 
       <Field label="점검요일" htmlFor="inspctDay" size="sm" className="col-span-1">
@@ -61,17 +67,24 @@ export default function SearchForm({ onSearch, isSearching }) {
           id="inspctDay"
           options={INSPECTION_DAY_OPTIONS}
           placeholder="전체"
-          className="w-full"
+          className="h-9 w-full"
           {...register("inspctDay")}
         />
       </Field>
 
       <Field label="정압기명" htmlFor="srchCntnt" size="sm" className="col-span-2" error={errors.srchCntnt?.message}>
-        <TextInput id="srchCntnt" type="text" placeholder="정압기명 검색" size="sm" {...register("srchCntnt")} />
+        <TextInput
+          id="srchCntnt"
+          type="text"
+          placeholder="정압기명 검색"
+          size="sm"
+          className="h-9"
+          {...register("srchCntnt")}
+        />
       </Field>
 
-      <div className="col-span-2 flex items-end sm:col-span-3 lg:col-span-6">
-        <Button type="submit" loading={isSearching} className="w-full sm:w-auto">
+      <div className="col-span-2 flex items-end sm:col-span-3 lg:col-span-1">
+        <Button type="submit" loading={isSearching} className="h-9 w-full py-0 sm:w-auto">
           검색
         </Button>
       </div>

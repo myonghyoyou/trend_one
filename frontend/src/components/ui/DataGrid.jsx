@@ -11,7 +11,7 @@ function alignClass(align) {
 /**
  * columnDefs 기반 경량 데이터 그리드. (CNTO DaeryunGrid의 columnDefs 개념을 축소 차용)
  *
- * columns: { key, header, align?: "left"|"right", headerClassName?, cellClassName?, render?: (row) => node }
+ * columns: { key, header, width?, align?: "left"|"right", headerClassName?, cellClassName?, render?: (row) => node }
  * selection: { isSelected(row), onToggle(row), isDisabled?(row), ariaLabel?(row) } — 있으면 앞에 체크박스 컬럼 추가
  */
 export default function DataGrid({
@@ -23,6 +23,7 @@ export default function DataGrid({
   selection,
   size = "md",
   emptyText = "데이터가 없습니다.",
+  fixedLayout = false,
   className = "",
 }) {
   const py = BODY_Y[size];
@@ -39,11 +40,19 @@ export default function DataGrid({
       {rows.length === 0 ? (
         <p className="px-4 py-10 text-center text-sm text-slate-400">{emptyText}</p>
       ) : (
-        <div className="max-h-80 overflow-y-auto">
-          <table className="w-full text-left text-sm">
+        <div className="max-h-80 overflow-auto">
+          <table className={cn("w-full text-left text-sm", fixedLayout && "table-fixed")}>
+            {fixedLayout && (
+              <colgroup>
+                {selection && <col key="selection" style={{ width: "3rem" }} />}
+                {columns.map((col) => (
+                  <col key={col.key} style={col.width ? { width: col.width } : undefined} />
+                ))}
+              </colgroup>
+            )}
             <thead className="sticky top-0 bg-slate-50 text-xs text-slate-500">
               <tr>
-                {selection && <th className="w-10 px-4 py-2" />}
+                {selection && <th className="w-10 px-2 py-2 text-center align-middle" />}
                 {columns.map((col) => (
                   <th key={col.key} className={cn("px-2 py-2", alignClass(col.align), col.headerClassName)}>
                     {col.header}
@@ -57,8 +66,9 @@ export default function DataGrid({
                 return (
                   <tr key={rowKey(row)} className={disabled ? "opacity-50" : undefined}>
                     {selection && (
-                      <td className={cn("px-4", py)}>
+                      <td className={cn("w-10 px-2 text-center align-middle", py)}>
                         <Checkbox
+                          className="align-middle"
                           checked={selection.isSelected(row)}
                           disabled={disabled}
                           onChange={() => selection.onToggle(row)}
@@ -85,6 +95,7 @@ export default function DataGrid({
 const columnShape = PropTypes.shape({
   key: PropTypes.string.isRequired,
   header: PropTypes.node,
+  width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   align: PropTypes.oneOf(["left", "right"]),
   headerClassName: PropTypes.string,
   cellClassName: PropTypes.string,
@@ -105,5 +116,6 @@ DataGrid.propTypes = {
   }),
   size: PropTypes.oneOf(["md", "sm"]),
   emptyText: PropTypes.string,
+  fixedLayout: PropTypes.bool,
   className: PropTypes.string,
 };

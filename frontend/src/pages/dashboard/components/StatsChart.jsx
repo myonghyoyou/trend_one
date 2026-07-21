@@ -19,7 +19,16 @@ export default function StatsChart({ statDataObj }) {
     return {
       color: SERIES_COLORS,
       grid: { left: 48, right: 24, top: 32, bottom: 64 },
-      tooltip: { trigger: "axis" },
+      tooltip: {
+        trigger: "axis",
+        valueFormatter: (value) => {
+          if (value === null || value === undefined || value === "") {
+            return "-";
+          }
+          const numericValue = Number(value);
+          return Number.isFinite(numericValue) ? numericValue.toFixed(2) : "-";
+        },
+      },
       legend: { top: 0, data: entries.map(([, gov]) => gov.gvrnr_nm) },
       xAxis: { type: "time" },
       yAxis: {
