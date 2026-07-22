@@ -7,7 +7,11 @@ import DataGrid from "@/components/ui/DataGrid.jsx";
  *
  * @param {{
  *   xAxisList: string[],
- *   statDataObj: Record<string, { gvrnr_nm: string, gvrnr_press2: number[] }> | null,
+ *   statDataObj: Record<string, {
+ *     gvrnr_nm: string,
+ *     gvrnr_press2: number[],
+ *     lastWeek?: { gvrnr_press2: number[] },
+ *   }> | null,
  * }} props
  */
 export default function DataTable({ xAxisList, statDataObj }) {
@@ -25,13 +29,25 @@ export default function DataTable({ xAxisList, statDataObj }) {
       cellClassName: "px-4 text-slate-600",
       render: (row) => row.timestamp,
     },
-    ...governors.map(([gvrnrUid, gov]) => ({
-      key: gvrnrUid,
-      header: `${gov.gvrnr_nm} (2차압력)`,
-      align: "right",
-      cellClassName: "text-slate-800",
-      render: (row) => gov.gvrnr_press2?.[row.index] ?? "-",
-    })),
+    ...governors.flatMap(([gvrnrUid, gov]) => {
+      const thisWeekColumn = {
+        key: gvrnrUid,
+        header: gov.lastWeek ? `${gov.gvrnr_nm} (이번주)` : `${gov.gvrnr_nm} (2차압력)`,
+        align: "right",
+        cellClassName: "text-slate-800",
+        render: (row) => gov.gvrnr_press2?.[row.index] ?? "-",
+      };
+      if (!gov.lastWeek) return [thisWeekColumn];
+
+      const lastWeekColumn = {
+        key: `${gvrnrUid}__lastWeek`,
+        header: `${gov.gvrnr_nm} (지난주)`,
+        align: "right",
+        cellClassName: "text-slate-500",
+        render: (row) => gov.lastWeek.gvrnr_press2?.[row.index] ?? "-",
+      };
+      return [thisWeekColumn, lastWeekColumn];
+    }),
   ];
 
   const rows = xAxisList.map((timestamp, index) => ({ timestamp, index }));
