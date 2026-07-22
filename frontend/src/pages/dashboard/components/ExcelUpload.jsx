@@ -2,8 +2,9 @@ import { useRef, useState } from "react";
 import PropTypes from "prop-types";
 import Button from "@/components/ui/Button.jsx";
 import Loader from "@/components/ui/Loader.jsx";
+import UploadPreviewModal from "@/pages/dashboard/components/UploadPreviewModal.jsx";
 import { useModal } from "@/contexts/ModalContext.jsx";
-import { fetchUploadStatus, uploadGovernorExcel } from "@/api/governors.js";
+import { fetchUploadStatus, previewGovernorExcel, uploadGovernorExcel } from "@/api/governors.js";
 import { ApiError, resolveErrorMessage } from "@/api/client.js";
 
 const STATUS_POLL_INTERVAL_MS = 1000;
@@ -33,6 +34,10 @@ export default function ExcelUpload({ onUploaded }) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadMessage, setUploadMessage] = useState("파일 업로드 중...");
+  const [previewing, setPreviewing] = useState(false);
+  const [preview, setPreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [allowDeleteOnly, setAllowDeleteOnly] = useState(false);
   const { openAlert } = useModal();
 
   const handleFileChange = async (event) => {
@@ -43,6 +48,37 @@ export default function ExcelUpload({ onUploaded }) {
     const formData = new FormData();
     formData.append("upload_files", file);
 
+    setSelectedFile(file);
+    setAllowDeleteOnly(false);
+    setPreviewing(true);
+    setUploadMessage("파일 내용을 분석하고 있습니다...");
+    try {
+      const previewResponse = await previewGovernorExcel(formData);
+      setPreview(previewResponse);
+    } catch (error) {
+      const message = resolveErrorMessage(error, "업로드 중 오류가 발생했습니다.");
+      openAlert(message, "FAIL");
+    } finally {
+      setPreviewing(false);
+      setUploadMessage("파일 업로드 중...");
+    }
+  };
+
+  const handleCancelPreview = () => {
+    setPreview(null);
+    setSelectedFile(null);
+    setAllowDeleteOnly(false);
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!selectedFile || !preview) return;
+    const formData = new FormData();
+    formData.append("upload_files", selectedFile);
+    formData.append("preview_sha256", preview.fileSha256);
+    formData.append("preview_fingerprint", preview.impact?.databaseFingerprint ?? "");
+    formData.append("allow_delete_only", String(allowDeleteOnly));
+
+    setPreview(null);
     setUploading(true);
     setUploadProgress(0);
     setUploadMessage("파일 전송 중...");
@@ -62,6 +98,8 @@ export default function ExcelUpload({ onUploaded }) {
       const message = resolveErrorMessage(error, "업로드 중 오류가 발생했습니다.");
       openAlert(message, "FAIL");
     } finally {
+      setSelectedFile(null);
+      setAllowDeleteOnly(false);
       setUploading(false);
       setUploadProgress(0);
       setUploadMessage("파일 업로드 중...");
@@ -77,10 +115,19 @@ export default function ExcelUpload({ onUploaded }) {
         className="hidden"
         onChange={handleFileChange}
       />
-      <Button variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+      <Button variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={uploading || previewing}>
         엑셀 업로드
       </Button>
-      <Loader visible={uploading} message={uploadMessage} progress={uploadProgress} />
+      <Loader visible={uploading || previewing} message={uploadMessage} progress={uploading ? uploadProgress : undefined} />
+      {preview && (
+        <UploadPreviewModal
+          preview={preview}
+          allowDeleteOnly={allowDeleteOnly}
+          onAllowDeleteOnlyChange={setAllowDeleteOnly}
+          onConfirm={handleConfirmUpload}
+          onCancel={handleCancelPreview}
+        />
+      )}
     </>
   );
 }

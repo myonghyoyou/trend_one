@@ -75,9 +75,10 @@ export function apiGet(path) {
 /**
  * @param {string} path
  * @param {Record<string, unknown>} body
+ * @param {RequestInit} [options]
  */
-export function apiPost(path, body) {
-  return request(path, { method: "POST", body: JSON.stringify(body) });
+export function apiPost(path, body, options = {}) {
+  return request(path, { method: "POST", body: JSON.stringify(body), ...options });
 }
 
 /**
