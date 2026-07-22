@@ -1,6 +1,7 @@
 import { useMemo } from "react";
-import ReactECharts from "echarts-for-react";
 import PropTypes from "prop-types";
+import SafeECharts from "@/components/ui/SafeECharts.jsx";
+import { calculatePressureAxisRange } from "@/pages/dashboard/utils/statsChartUtils.js";
 
 const SERIES_COLORS = ["#2563eb", "#f59e0b", "#10b981"];
 const LAST_WEEK_OPACITY = 0.45;
@@ -63,6 +64,7 @@ export default function StatsChart({ statDataObj }) {
   const option = useMemo(() => {
     const entries = Object.entries(statDataObj ?? {});
     const compareMode = entries.some(([, gov]) => gov.lastWeek);
+    const pressureAxisRange = calculatePressureAxisRange(statDataObj);
 
     const legendData = entries.flatMap(([, gov]) =>
       gov.lastWeek ? [`${gov.gvrnr_nm} (이번주)`, `${gov.gvrnr_nm} (지난주)`] : [gov.gvrnr_nm]
@@ -105,10 +107,10 @@ export default function StatsChart({ statDataObj }) {
       xAxis: { type: "time" },
       yAxis: {
         type: "value",
-        min: (extent) => Math.min(1.7, extent.min),
-        max: (extent) => Math.max(3.0, extent.max),
+        min: pressureAxisRange.min,
+        max: pressureAxisRange.max,
       },
-      dataZoom: [{ type: "inside" }, { type: "slider" }],
+      dataZoom: [{ type: "slider" }],
       series,
     };
   }, [statDataObj]);
@@ -119,7 +121,7 @@ export default function StatsChart({ statDataObj }) {
     <div className="rounded-lg border border-slate-200 bg-white p-4">
       <h2 className="mb-2 text-sm font-semibold text-slate-700">2차 압력 트렌드</h2>
       {hasData ? (
-        <ReactECharts option={option} style={{ height: 360 }} notMerge />
+        <SafeECharts option={option} style={{ height: 360, width: "100%" }} />
       ) : (
         <p className="py-10 text-center text-sm text-slate-400">
           정압기를 선택하고 조회하면 차트가 표시됩니다.
