@@ -50,11 +50,20 @@ export default function DataGrid({
                 ))}
               </colgroup>
             )}
-            <thead className="sticky top-0 bg-slate-50 text-xs text-slate-500">
+            <thead className="text-xs text-slate-500">
               <tr>
-                {selection && <th className="w-10 px-2 py-2 text-center align-middle" />}
+                {selection && (
+                  <th className="sticky top-0 z-20 w-10 bg-slate-50 px-2 py-2 text-center align-middle" />
+                )}
                 {columns.map((col) => (
-                  <th key={col.key} className={cn("px-2 py-2", alignClass(col.align), col.headerClassName)}>
+                  <th
+                    key={col.key}
+                    className={cn(
+                      "sticky top-0 z-20 bg-slate-50 px-2 py-2",
+                      alignClass(col.align),
+                      col.headerClassName
+                    )}
+                  >
                     {col.header}
                   </th>
                 ))}
