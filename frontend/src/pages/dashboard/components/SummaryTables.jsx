@@ -1,18 +1,5 @@
 import PropTypes from "prop-types";
-
-/** @param {Array<number|null>} values */
-function summarize(values) {
-  const numeric = (values ?? []).filter((v) => typeof v === "number" && !Number.isNaN(v));
-  if (numeric.length === 0) return { min: null, avg: null, max: null };
-
-  const sum = numeric.reduce((acc, v) => acc + v, 0);
-  return { min: Math.min(...numeric), avg: sum / numeric.length, max: Math.max(...numeric) };
-}
-
-/** @param {number|null} value */
-function formatStat(value) {
-  return typeof value === "number" ? value.toFixed(2) : "-";
-}
+import { formatReportValue, summarizeValues } from "@/pages/dashboard/utils/reportModel.js";
 
 /**
  * @param {number|null} thisAvg
@@ -42,15 +29,15 @@ function WeeklyComparisonStats({ thisWeek, lastWeek }) {
         <tbody>
           <tr>
             <td className="text-left text-xs text-slate-500">이번주</td>
-            <td>{formatStat(thisWeek.min)}</td>
-            <td className="font-medium text-slate-800">{formatStat(thisWeek.avg)}</td>
-            <td>{formatStat(thisWeek.max)}</td>
+            <td>{formatReportValue(thisWeek.min)}</td>
+            <td className="font-medium text-slate-800">{formatReportValue(thisWeek.avg)}</td>
+            <td>{formatReportValue(thisWeek.max)}</td>
           </tr>
           <tr className="text-slate-400">
             <td className="text-left text-xs">지난주</td>
-            <td>{formatStat(lastWeek.min)}</td>
-            <td>{formatStat(lastWeek.avg)}</td>
-            <td>{formatStat(lastWeek.max)}</td>
+            <td>{formatReportValue(lastWeek.min)}</td>
+            <td>{formatReportValue(lastWeek.avg)}</td>
+            <td>{formatReportValue(lastWeek.max)}</td>
           </tr>
         </tbody>
       </table>
@@ -88,8 +75,8 @@ export default function SummaryTables({ statDataObj }) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       {governors.map(([gvrnrUid, gov]) => {
-        const thisWeek = summarize(gov.gvrnr_press2);
-        const lastWeek = gov.lastWeek ? summarize(gov.lastWeek.gvrnr_press2) : null;
+        const thisWeek = summarizeValues(gov.gvrnr_press2);
+        const lastWeek = gov.lastWeek ? summarizeValues(gov.lastWeek.gvrnr_press2) : null;
 
         return (
           <div key={gvrnrUid} className="rounded-lg border border-slate-200 bg-white p-4">
@@ -100,15 +87,15 @@ export default function SummaryTables({ statDataObj }) {
               <dl className="grid grid-cols-3 gap-2 text-center">
                 <div>
                   <dt className="text-xs text-slate-500">MIN</dt>
-                  <dd className="text-sm font-medium text-slate-800">{formatStat(thisWeek.min)}</dd>
+                <dd className="text-sm font-medium text-slate-800">{formatReportValue(thisWeek.min)}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-slate-500">AVG</dt>
-                  <dd className="text-sm font-medium text-slate-800">{formatStat(thisWeek.avg)}</dd>
+                <dd className="text-sm font-medium text-slate-800">{formatReportValue(thisWeek.avg)}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-slate-500">MAX</dt>
-                  <dd className="text-sm font-medium text-slate-800">{formatStat(thisWeek.max)}</dd>
+                <dd className="text-sm font-medium text-slate-800">{formatReportValue(thisWeek.max)}</dd>
                 </div>
               </dl>
             )}

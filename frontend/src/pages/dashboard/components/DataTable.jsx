@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import DataGrid from "@/components/ui/DataGrid.jsx";
+import { formatReportValue } from "@/pages/dashboard/utils/reportModel.js";
 
 /**
  * 측정 데이터 테이블. xAxisList와 각 정압기의 gvrnr_press2 배열은 동일한 길이로 인덱스 정렬되어 있다고 가정한다
@@ -36,7 +37,7 @@ export default function DataTable({ xAxisList, statDataObj }) {
         header: gov.lastWeek ? `${gov.gvrnr_nm} (이번주)` : `${gov.gvrnr_nm} (2차압력)`,
         align: "right",
         cellClassName: "text-slate-800",
-        render: (row) => gov.gvrnr_press2?.[row.index] ?? "-",
+        render: (row) => formatReportValue(gov.gvrnr_press2?.[row.index]),
       };
       if (!gov.lastWeek) return [thisWeekColumn];
 
@@ -45,7 +46,7 @@ export default function DataTable({ xAxisList, statDataObj }) {
         header: `${gov.gvrnr_nm} (지난주)`,
         align: "right",
         cellClassName: "text-slate-500",
-        render: (row) => gov.lastWeek.gvrnr_press2?.[row.index] ?? "-",
+        render: (row) => formatReportValue(gov.lastWeek.gvrnr_press2?.[row.index]),
       };
       return [thisWeekColumn, lastWeekColumn];
     }),
