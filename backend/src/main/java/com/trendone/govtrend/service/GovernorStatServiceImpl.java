@@ -37,9 +37,18 @@ public class GovernorStatServiceImpl implements GovernorStatService {
 
     @Override
     public GovernorStatsResponse search(GovernorStatsRequest request) {
+        return searchInternal(request, false);
+    }
+
+    @Override
+    public GovernorStatsResponse searchForPrint(GovernorStatsRequest request) {
+        return searchInternal(request, true);
+    }
+
+    private GovernorStatsResponse searchInternal(GovernorStatsRequest request, boolean printQuery) {
         LocalDate[] dates = validateDates(request);
         int interval = parseInterval(request);
-        List<String> uidList = parseUids(request.getGvrnrUids());
+        List<String> uidList = parseUids(request.getGvrnrUids(), !printQuery);
         List<String> nameList = parseNames(request.getGvrnrNms());
 
         request.setStartDate(dates[0].toString());
@@ -52,7 +61,10 @@ public class GovernorStatServiceImpl implements GovernorStatService {
         List<String> xAxisList = new ArrayList<>();
         Set<String> xAxisSet = new LinkedHashSet<>();
 
-        for (GovernorStatRow row : governorStatDao.findGovernorStats(request)) {
+        List<GovernorStatRow> rows = printQuery
+                ? governorStatDao.findGovernorPrintStats(request)
+                : governorStatDao.findGovernorStats(request);
+        for (GovernorStatRow row : rows) {
             if (!rowsByUid.containsKey(row.getGvrnrUid()) || row.getRecordDttm() == null) {
                 continue;
             }
@@ -101,7 +113,7 @@ public class GovernorStatServiceImpl implements GovernorStatService {
         }
     }
 
-    private List<String> parseUids(String value) {
+    private List<String> parseUids(String value, boolean enforceSelectionLimit) {
         if (isBlank(value)) {
             throw invalid("통계를 조회할 정압기를 선택하세요.");
         }
@@ -110,7 +122,7 @@ public class GovernorStatServiceImpl implements GovernorStatService {
                 .filter(uid -> !uid.isEmpty())
                 .distinct()
                 .collect(Collectors.toList());
-        if (uidList.isEmpty() || uidList.size() > 3
+        if (uidList.isEmpty() || (enforceSelectionLimit && uidList.size() > 3)
                 || uidList.stream().anyMatch(uid -> uid.length() > 40 || !uid.matches(GOVERNOR_UID_PATTERN))) {
             throw invalid("정압기 선택 값이 올바르지 않습니다.");
         }

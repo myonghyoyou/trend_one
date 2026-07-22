@@ -37,4 +37,10 @@ public class GovernorController {
             @RequestBody GovernorStatsRequest request) {
         return ResponseEntity.ok(ResponseDto.ok(governorStatService.search(request)));
     }
+
+    @PostMapping("/print-stats")
+    public ResponseEntity<ResponseDto<GovernorStatsResponse>> printStats(
+            @RequestBody GovernorStatsRequest request) {
+        return ResponseEntity.ok(ResponseDto.ok(governorStatService.searchForPrint(request)));
+    }
 }
