@@ -12,46 +12,6 @@ const INSPECTION_DAY_LABELS = {
 };
 
 const INSPECTION_DAY_ORDER = ["MON", "TUE", "WED", "THU", "FRI"];
-export const PRINT_CHARTS_PER_PAGE = 4;
-export const PRINT_CONTINUATION_CHARTS_PER_PAGE = 5;
-
-export function splitIntoChunks(items, chunkSize) {
-  const chunks = [];
-  for (let index = 0; index < items.length; index += chunkSize) {
-    chunks.push(items.slice(index, index + chunkSize));
-  }
-  return chunks;
-}
-
-/**
- * 요일별 인쇄 페이지를 만든다.
- * 각 요일은 보고서 제목이 있는 첫 페이지에 4개를 배치하고,
- * 남은 정압기는 같은 요일의 이어지는 페이지에 5개씩 배치한다.
- * 정압기가 없는 요일도 요일별 보고서 구조를 유지하기 위해 빈 첫 페이지를 만든다.
- * @param {Array<{code: string, label: string, governors: Array<object>}>} weekdaySections
- */
-export function buildWeekdayPrintPages(weekdaySections = []) {
-  return weekdaySections.flatMap((section) => {
-    const firstPageGovernors = section.governors.slice(0, PRINT_CHARTS_PER_PAGE);
-    const continuationChunks = splitIntoChunks(
-      section.governors.slice(PRINT_CHARTS_PER_PAGE),
-      PRINT_CONTINUATION_CHARTS_PER_PAGE
-    );
-
-    return [
-      {
-        ...section,
-        governors: firstPageGovernors,
-        isFirstPage: true,
-      },
-      ...continuationChunks.map((governors) => ({
-        ...section,
-        governors,
-        isFirstPage: false,
-      })),
-    ];
-  });
-}
 
 function resolveLabel(value, labels) {
   if (value === null || value === undefined || value === "") return "";

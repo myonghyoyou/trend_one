@@ -1,9 +1,6 @@
 import PropTypes from "prop-types";
 import PrintReportChart from "./PrintReportChart.jsx";
-import {
-  buildWeekdayPrintPages,
-  formatReportValue,
-} from "@/pages/dashboard/utils/reportModel.js";
+import { formatReportValue } from "@/pages/dashboard/utils/reportModel.js";
 
 function displayValue(value) {
   return value || "전체";
@@ -82,20 +79,18 @@ ReportHeader.propTypes = {
   inspectionDay: PropTypes.string.isRequired,
 };
 
-function WeekdayPrintPage({ page, metadata, compareMode }) {
+function WeekdaySection({ section, metadata, compareMode }) {
   return (
-    <section className={`print-report-weekday-page ${page.isFirstPage ? "print-report-weekday-first-page" : "print-report-weekday-continuation-page"}`}>
-      {page.isFirstPage && (
-        <ReportHeader metadata={metadata} inspectionDay={page.label} />
-      )}
+    <section className="print-report-weekday-section">
+      <ReportHeader metadata={metadata} inspectionDay={section.label} />
       <div className="print-report-weekday-heading">
-        <h2 className="text-base font-semibold text-slate-800">{page.code} ({page.label})</h2>
+        <h2 className="text-base font-semibold text-slate-800">{section.code} ({section.label})</h2>
       </div>
-      {page.governors.length === 0 ? (
+      {section.governors.length === 0 ? (
         <p className="flex min-h-40 items-center justify-center text-sm text-slate-500">측정값 없음</p>
       ) : (
-        <div className="print-report-governor-grid">
-          {page.governors.map((governor) => (
+        <div className="print-report-governor-list">
+          {section.governors.map((governor) => (
             <div key={governor.uid} className="print-report-governor-row">
               <GovernorSummaryCard governor={governor} compareMode={compareMode} />
               <PrintReportChart governor={governor} compact />
@@ -107,12 +102,11 @@ function WeekdayPrintPage({ page, metadata, compareMode }) {
   );
 }
 
-WeekdayPrintPage.propTypes = {
-  page: PropTypes.shape({
+WeekdaySection.propTypes = {
+  section: PropTypes.shape({
     code: PropTypes.string.isRequired,
     label: PropTypes.string.isRequired,
     governors: PropTypes.arrayOf(PropTypes.object).isRequired,
-    isFirstPage: PropTypes.bool.isRequired,
   }).isRequired,
   metadata: PropTypes.object.isRequired,
   compareMode: PropTypes.bool.isRequired,
@@ -120,7 +114,6 @@ WeekdayPrintPage.propTypes = {
 
 export default function PrintReport({ model, onClose }) {
   const { metadata } = model;
-  const pages = buildWeekdayPrintPages(model.weekdaySections);
 
   return (
     <section className="print-report mx-auto max-w-6xl bg-white p-6 text-slate-900" aria-label="인쇄용 보고서">
@@ -139,18 +132,16 @@ export default function PrintReport({ model, onClose }) {
       {model.governors.length === 0 ? (
         <p className="py-12 text-center text-sm text-slate-500">조회된 데이터가 없습니다.</p>
       ) : (
-        <>
-          <div className="print-report-weekday-pages">
-            {pages.map((page, pageIndex) => (
-              <WeekdayPrintPage
-                key={`${page.code}-${pageIndex}`}
-                page={page}
-                metadata={metadata}
-                compareMode={model.compareMode}
-              />
-            ))}
-          </div>
-        </>
+        <div className="print-report-weekday-pages">
+          {model.weekdaySections.map((section) => (
+            <WeekdaySection
+              key={section.code}
+              section={section}
+              metadata={metadata}
+              compareMode={model.compareMode}
+            />
+          ))}
+        </div>
       )}
     </section>
   );

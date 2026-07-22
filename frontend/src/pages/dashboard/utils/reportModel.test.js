@@ -6,10 +6,6 @@ import {
   calculateSeriesRange,
   formatReportValue,
   normalizeChartSeries,
-  buildWeekdayPrintPages,
-  PRINT_CHARTS_PER_PAGE,
-  PRINT_CONTINUATION_CHARTS_PER_PAGE,
-  splitIntoChunks,
   summarizeValues,
 } from "./reportModel.js";
 
@@ -204,41 +200,6 @@ test("builds all weekday sections in MON to FRI order, including empty days", ()
       { code: "WED", label: "수요일", governorUids: ["gov-wed"] },
       { code: "THU", label: "목요일", governorUids: [] },
       { code: "FRI", label: "금요일", governorUids: [] },
-    ]
-  );
-});
-
-test("splits weekday governors into print pages of four charts", () => {
-  assert.equal(PRINT_CHARTS_PER_PAGE, 4);
-  assert.equal(PRINT_CONTINUATION_CHARTS_PER_PAGE, 5);
-  assert.deepEqual(splitIntoChunks([1, 2, 3, 4, 5, 6, 7, 8, 9], 4), [
-    [1, 2, 3, 4],
-    [5, 6, 7, 8],
-    [9],
-  ]);
-});
-
-test("builds a four-chart weekday report page followed by five-chart continuation pages", () => {
-  const pages = buildWeekdayPrintPages([
-    {
-      code: "MON",
-      label: "월요일",
-      governors: Array.from({ length: 10 }, (_, index) => ({ uid: `mon-${index}` })),
-    },
-    { code: "TUE", label: "화요일", governors: [] },
-  ]);
-
-  assert.deepEqual(
-    pages.map((page) => ({
-      code: page.code,
-      isFirstPage: page.isFirstPage,
-      governorCount: page.governors.length,
-    })),
-    [
-      { code: "MON", isFirstPage: true, governorCount: 4 },
-      { code: "MON", isFirstPage: false, governorCount: 5 },
-      { code: "MON", isFirstPage: false, governorCount: 1 },
-      { code: "TUE", isFirstPage: true, governorCount: 0 },
     ]
   );
 });
