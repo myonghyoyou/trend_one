@@ -15,6 +15,13 @@ function compareValues(left, right, sortKey) {
   return String(left ?? "").localeCompare(String(right ?? ""), "ko");
 }
 
+function formatCount(value) {
+  if (value === null || value === undefined || value === "") return "-";
+
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue.toLocaleString("ko-KR") : "-";
+}
+
 function SortableHeader({ label, sortKey, sort, onSort }) {
   const isActive = sort.key === sortKey;
   const directionLabel = isActive ? (sort.direction === "asc" ? "오름차순" : "내림차순") : "정렬 안 함";
@@ -93,6 +100,7 @@ export default function GovernorTable({ governors, selected, onToggle }) {
       header: "측정건수",
       align: "right",
       cellClassName: "whitespace-nowrap text-slate-600",
+      render: (g) => formatCount(g.gvrnr_stat_cnt),
     },
   ];
 
@@ -100,9 +108,12 @@ export default function GovernorTable({ governors, selected, onToggle }) {
     <DataGrid
       title="검색 결과"
       headerRight={
-        <span className="text-xs text-slate-500">
-          최대 {MAX_SELECTED_GOVERNORS}개 선택 ({selected.length}/{MAX_SELECTED_GOVERNORS})
-        </span>
+        <div className="flex items-center gap-3 text-xs text-slate-500">
+          <span>정압기 선택시 트렌드가 자동으로 조회됩니다</span>
+          <span>
+            최대 {MAX_SELECTED_GOVERNORS}개 선택 ({selected.length}/{MAX_SELECTED_GOVERNORS})
+          </span>
+        </div>
       }
       columns={columns}
       rows={sortedGovernors}

@@ -5,4 +5,6 @@ import com.trendone.govtrend.dto.governor.GovernorStatsResponse;
 public interface GovernorStatService {
 
     GovernorStatsResponse search(GovernorStatsRequest request);
+
+    GovernorStatsResponse searchForPrint(GovernorStatsRequest request);
 }

@@ -28,4 +28,26 @@
         </foreach>
         ORDER BY a.record_dttm ASC, a.gvrnr_uid ASC
     </select>
+
+    <select id="findGovernorPrintStats"
+            parameterType="com.trendone.govtrend.dto.governor.GovernorStatsRequest"
+            resultType="com.trendone.govtrend.dto.governor.GovernorStatRow">
+        SELECT
+            a.gvrnr_uid,
+            a.gvrnr_press2::float AS gvrnr_press2,
+            to_char(a.record_dttm, 'YYYY-MM-DD HH24:MI:SS') AS record_dttm
+        FROM t_governor_stat a
+        INNER JOIN generate_series(
+            CAST(#{startDate} AS TIMESTAMP),
+            CAST(#{endDate} AS DATE) + INTERVAL '1 day' - INTERVAL '1 minute',
+            CAST(#{intervalNum} AS INTEGER) * INTERVAL '1 minute'
+        ) interval_dttm
+            ON a.record_dttm = interval_dttm
+        WHERE a.record_dttm &gt;= CAST(#{startDate} AS DATE)
+          AND a.record_dttm &lt; CAST(#{endDate} AS DATE) + INTERVAL '1 day'
+        <foreach collection="governorUidList" item="uid" open="AND a.gvrnr_uid IN (" separator="," close=")">
+            #{uid}
+        </foreach>
+        ORDER BY a.record_dttm ASC, a.gvrnr_uid ASC
+    </select>
 </mapper>

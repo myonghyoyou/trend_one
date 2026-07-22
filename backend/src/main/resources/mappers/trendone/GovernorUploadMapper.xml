@@ -18,6 +18,34 @@
         FOR UPDATE
     </select>
 
+    <select id="findGovernors"
+            resultType="com.trendone.govtrend.dto.upload.GovernorMaster">
+        SELECT
+            gvrnr_uid,
+            gvrnr_nm,
+            cate_cd,
+            inspct_day
+        FROM t_governor
+        WHERE
+        <foreach collection="items" item="item" separator=" OR " open="(" close=")">
+            (gvrnr_nm = #{item.gvrnrNm} AND cate_cd = #{item.cateCd})
+        </foreach>
+    </select>
+
+    <select id="findExistingGovernorStats"
+            resultType="com.trendone.govtrend.dto.upload.GovernorUploadExistingStat">
+        SELECT
+            gvrnr_uid,
+            record_dttm
+        FROM t_governor_stat
+        WHERE
+        <foreach collection="scopes" item="scope" separator=" OR " open="(" close=")">
+            (gvrnr_uid = #{scope.gvrnrUid}
+             AND record_dttm &gt;= #{scope.startDttm}
+             AND record_dttm &lt;= #{scope.endDttm})
+        </foreach>
+    </select>
+
     <select id="findGovernorForUpdate"
             resultType="com.trendone.govtrend.dto.upload.GovernorMaster">
         SELECT

@@ -50,3 +50,194 @@ body {
   font-family: var(--font-sans);
   @apply bg-slate-50 text-slate-900;
 }
+
+.print-report-chart,
+.print-report-title,
+.print-report-table tr {
+  break-inside: avoid;
+}
+
+.print-report-weekday-page,
+.print-report-weekday-heading {
+  break-inside: avoid;
+}
+
+.print-report-weekday-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.print-report-governor-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.print-report-governor-row {
+  display: grid;
+  grid-template-columns: minmax(165px, 22%) minmax(0, 1fr);
+  gap: 1rem;
+  min-width: 0;
+  width: 100%;
+  break-inside: avoid;
+}
+
+.print-report-governor-summary {
+  align-self: start;
+  height: fit-content;
+}
+
+.print-report-chart-compact {
+  min-width: 0;
+  width: 100%;
+}
+
+.print-report-chart-svg {
+  min-width: 0;
+  width: 100%;
+}
+
+.print-report-chart-plot {
+  box-sizing: border-box;
+  padding-left: 2.25rem;
+  position: relative;
+  width: 100%;
+}
+
+.print-report-chart-y-labels {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2.25rem;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.print-report-chart-y-labels span {
+  position: absolute;
+  right: 0.25rem;
+  transform: translateY(-50%);
+  color: #475569;
+  font-size: 0.65rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.print-report-chart-x-labels {
+  position: absolute;
+  right: 3%;
+  bottom: 1%;
+  left: calc(2.25rem + 7%);
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #475569;
+  font-size: 0.65rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.print-report-table thead {
+  display: table-header-group;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+
+  html,
+  body,
+  #root {
+    height: auto;
+    min-height: 0;
+    background: #fff;
+  }
+
+  .dashboard-page,
+  .print-report-actions {
+    display: none !important;
+  }
+
+  .print-report {
+    display: block !important;
+    max-width: none !important;
+    padding: 0 !important;
+    color: #0f172a;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .print-report-table {
+    page-break-inside: auto;
+  }
+
+  .print-report-table th,
+  .print-report-table td {
+    overflow-wrap: anywhere;
+  }
+
+  .print-report-chart {
+    page-break-inside: avoid;
+  }
+
+  .print-report-weekday-pages {
+    break-before: page;
+  }
+
+  .print-report-weekday-page {
+    min-height: 180mm;
+    break-after: page;
+  }
+
+  .print-report-weekday-page:last-child {
+    break-after: auto;
+  }
+
+  .print-report-governor-grid {
+    flex: 1;
+    column-gap: 3mm;
+    row-gap: 8mm;
+  }
+
+  .print-report-weekday-first-page .print-report-title {
+    margin-bottom: 0;
+    padding-bottom: 3mm;
+  }
+
+  .print-report-weekday-first-page .print-report-governor-grid {
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+  }
+
+  .print-report-weekday-continuation-page .print-report-governor-grid {
+    grid-template-rows: repeat(5, minmax(0, 1fr));
+  }
+
+  .print-report-governor-row {
+    min-height: 0;
+    grid-template-columns: 46mm minmax(0, 1fr);
+    gap: 4mm;
+  }
+
+  .print-report-chart-compact {
+    min-height: 0;
+    padding: 3mm;
+  }
+
+  .print-report-chart-compact .print-report-chart-svg {
+    height: 24mm;
+    width: 100%;
+  }
+
+  .print-report-weekday-continuation-page .print-report-chart-compact .print-report-chart-svg {
+    height: 22mm;
+  }
+
+  button:focus,
+  input:focus,
+  select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}

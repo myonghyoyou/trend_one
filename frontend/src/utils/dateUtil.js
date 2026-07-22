@@ -24,3 +24,14 @@ export function dateDiffDays(startDate, endDate) {
   const end = new Date(endDate);
   return Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 }
+
+/**
+ * @param {string} dateStr - "YYYY-MM-DD"
+ * @param {number} n - 더할 일수 (음수 가능)
+ * @returns {string} "YYYY-MM-DD"
+ */
+export function addDays(dateStr, n) {
+  const date = new Date(dateStr);
+  date.setDate(date.getDate() + n);
+  return toDateInputValue(date);
+}

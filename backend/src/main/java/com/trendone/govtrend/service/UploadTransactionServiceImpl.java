@@ -17,6 +17,7 @@ import com.trendone.govtrend.dto.upload.GovernorUploadRow;
 import com.trendone.govtrend.dto.upload.GovernorUploadSheet;
 import com.trendone.govtrend.dto.upload.GovernorUploadStageRow;
 import com.trendone.govtrend.dto.upload.UploadResponse;
+import com.trendone.govtrend.dto.upload.UploadImpactAnalysis;
 import com.trendone.govtrend.dto.transaction.TransactionChange;
 import com.trendone.govtrend.dto.transaction.TransactionData;
 import com.trendone.govtrend.exception.BizException;
@@ -33,6 +34,7 @@ public class UploadTransactionServiceImpl implements UploadTransactionService {
     private final TransactionProgressService transactionProgressService;
     private final FileUploadLogDao fileUploadLogDao;
     private final ObjectMapper objectMapper;
+    private final UploadImpactAnalyzer uploadImpactAnalyzer;
 
     public UploadTransactionServiceImpl(
             TransactionDao transactionDao,
@@ -40,19 +42,31 @@ public class UploadTransactionServiceImpl implements UploadTransactionService {
             GovernorUploadStageService governorUploadStageService,
             TransactionProgressService transactionProgressService,
             FileUploadLogDao fileUploadLogDao,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            UploadImpactAnalyzer uploadImpactAnalyzer) {
         this.transactionDao = transactionDao;
         this.governorUploadDao = governorUploadDao;
         this.governorUploadStageService = governorUploadStageService;
         this.transactionProgressService = transactionProgressService;
         this.fileUploadLogDao = fileUploadLogDao;
         this.objectMapper = objectMapper;
+        this.uploadImpactAnalyzer = uploadImpactAnalyzer;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UploadResponse processUpload(
-            String transactionId, GovernorUploadData uploadData, String mbrUid, String fileName) {
+            String transactionId,
+            GovernorUploadData uploadData,
+            String mbrUid,
+            String fileName,
+            String expectedFingerprint) {
+        if (expectedFingerprint != null && !expectedFingerprint.trim().isEmpty()) {
+            UploadImpactAnalysis currentImpact = uploadImpactAnalyzer.analyze(uploadData);
+            if (!expectedFingerprint.equals(currentImpact.getDatabaseFingerprint())) {
+                throw invalid("미리보기 후 데이터가 변경되었습니다. 다시 미리보기를 실행하세요.");
+            }
+        }
         List<TransactionChange> changes = new ArrayList<>();
         List<ResolvedUploadColumn> resolvedColumns = new ArrayList<>();
         int totalColumns = uploadData.getSheets().stream()
@@ -119,6 +133,10 @@ public class UploadTransactionServiceImpl implements UploadTransactionService {
         fileUploadLogDao.insertUploadLog(new FileUploadLog(mbrUid, "Y", fileName));
         transactionDao.updateTransaction(transactionId, "completed", data);
         return new UploadResponse(transactionId, "completed");
+    }
+
+    private BizException invalid(String message) {
+        return new BizException(com.trendone.govtrend.common.ErrorCode.INPUT_VALUE_INVALID, message);
     }
 
     private static class ResolvedUploadColumn {

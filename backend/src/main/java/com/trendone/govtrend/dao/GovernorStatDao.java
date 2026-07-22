@@ -8,4 +8,6 @@ import com.trendone.govtrend.dto.governor.GovernorStatsRequest;
 public interface GovernorStatDao {
 
     List<GovernorStatRow> findGovernorStats(GovernorStatsRequest request);
+
+    List<GovernorStatRow> findGovernorPrintStats(GovernorStatsRequest request);
 }
