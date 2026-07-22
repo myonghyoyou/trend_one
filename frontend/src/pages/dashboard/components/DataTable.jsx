@@ -3,7 +3,8 @@ import DataGrid from "@/components/ui/DataGrid.jsx";
 
 /**
  * 측정 데이터 테이블. xAxisList와 각 정압기의 gvrnr_press2 배열은 동일한 길이로 인덱스 정렬되어 있다고 가정한다
- * (generate_series() 기반 균일 시간 버킷, docs/plan.md 섹션 6 참고).
+ * (xAxisList는 고정 시간 격자가 아니라 실제 DB에 존재하는 행의 타임스탬프 합집합이며, 백엔드가 모든 정압기를
+ * 이 축에 맞춰 null로 채워 인덱스를 정렬한다. GovernorStatServiceImpl.search 참고).
  *
  * @param {{
  *   xAxisList: string[],
