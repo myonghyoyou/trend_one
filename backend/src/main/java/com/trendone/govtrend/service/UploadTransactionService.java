@@ -6,5 +6,9 @@ import com.trendone.govtrend.dto.upload.UploadResponse;
 public interface UploadTransactionService {
 
     UploadResponse processUpload(
-            String transactionId, GovernorUploadData uploadData, String mbrUid, String fileName);
+            String transactionId,
+            GovernorUploadData uploadData,
+            String mbrUid,
+            String fileName,
+            String expectedFingerprint);
 }

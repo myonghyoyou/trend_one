@@ -38,6 +38,7 @@ public class SessionCheckFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         return !(uri.startsWith("/api/governors/")
                 || "/api/crud".equals(uri)
+                || "/api/crud/preview".equals(uri)
                 || uri.startsWith("/api/transactions/"));
     }
 

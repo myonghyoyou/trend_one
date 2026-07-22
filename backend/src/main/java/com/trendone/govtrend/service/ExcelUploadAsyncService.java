@@ -27,11 +27,13 @@ public class ExcelUploadAsyncService {
             String transactionId,
             GovernorUploadData uploadData,
             String mbrUid,
-        String fileName) {
+            String fileName,
+            String expectedFingerprint) {
         try {
             transactionService.markInProgress(transactionId);
             transactionProgressService.update(transactionId, 10, "업로드 처리를 준비하고 있습니다.");
-            uploadTransactionService.processUpload(transactionId, uploadData, mbrUid, fileName);
+            uploadTransactionService.processUpload(
+                    transactionId, uploadData, mbrUid, fileName, expectedFingerprint);
             transactionProgressService.update(transactionId, 100, "업로드가 완료되었습니다.");
         } catch (BizException exception) {
             markFailure(transactionId, exception.getMessage());

@@ -1,6 +1,7 @@
 package com.trendone.govtrend.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -13,7 +14,9 @@ import java.time.LocalDateTime;
 import com.trendone.govtrend.dao.FileUploadLogDao;
 import com.trendone.govtrend.dto.transaction.TransactionCreateResponse;
 import com.trendone.govtrend.dto.upload.GovernorUploadData;
+import com.trendone.govtrend.dto.upload.UploadImpactAnalysis;
 import com.trendone.govtrend.service.TransactionService;
+import com.trendone.govtrend.exception.BizException;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -25,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -43,6 +47,15 @@ class ExcelUploadServiceImplTest {
     @Mock
     private FileUploadLogDao fileUploadLogDao;
 
+    @Mock
+    private UploadImpactAnalyzer uploadImpactAnalyzer;
+
+    @Mock
+    private UploadFileHashService uploadFileHashService;
+
+    @Spy
+    private ExcelUploadParser excelUploadParser;
+
     @InjectMocks
     private ExcelUploadServiceImpl excelUploadService;
 
@@ -60,7 +73,7 @@ class ExcelUploadServiceImplTest {
 
         ArgumentCaptor<GovernorUploadData> uploadDataCaptor = ArgumentCaptor.forClass(GovernorUploadData.class);
         verify(excelUploadAsyncService).process(
-                eq("transaction-1"), uploadDataCaptor.capture(), eq("admin"), eq("test.xlsx"));
+                eq("transaction-1"), uploadDataCaptor.capture(), eq("admin"), eq("test.xlsx"), eq(null));
 
         GovernorUploadData uploadData = uploadDataCaptor.getValue();
         assertEquals(1, uploadData.getSheets().size());
@@ -70,6 +83,21 @@ class ExcelUploadServiceImplTest {
         assertEquals(1, uploadData.getSheets().get(0).getRows().size());
         assertEquals(new BigDecimal("2.25"),
                 uploadData.getSheets().get(0).getRows().get(0).getGvrnrPress2Values().get(0));
+    }
+
+    @Test
+    void rejectsPreviewConfirmationWithoutDeleteOnlyConsent() throws Exception {
+        MockMultipartFile file = workbookFile();
+        when(uploadFileHashService.sha256(file)).thenReturn("file-hash");
+        when(uploadImpactAnalyzer.analyze(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new UploadImpactAnalysis(
+                        1, 0, 1, 0, 1, 1, 0, 1, 1, "db-fingerprint", java.util.Collections.emptyList(),
+                        java.util.Collections.singletonList("삭제 경고")));
+
+        BizException exception = assertThrows(BizException.class,
+                () -> excelUploadService.upload(file, "admin", "file-hash", "db-fingerprint", false));
+
+        assertEquals("기존 측정 데이터 삭제에 대한 동의가 필요합니다.", exception.getMessage());
     }
 
     private MockMultipartFile workbookFile() throws Exception {
